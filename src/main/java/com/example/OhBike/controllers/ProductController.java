@@ -31,11 +31,11 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<GeneralResponse> getAllProducts() {
+    public ResponseEntity<GeneralResponse> getAllProducts(@RequestParam(required = false) UUID categoryId) {
         return buildResponse(
                 "Products found",
                 HttpStatus.OK,
-                productService.getAllProducts()
+                productService.getAllProducts(categoryId)
         );
     }
 

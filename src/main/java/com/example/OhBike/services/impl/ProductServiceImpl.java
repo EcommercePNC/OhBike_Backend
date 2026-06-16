@@ -41,8 +41,16 @@ public class ProductServiceImpl implements ProductService{
         return productMapper.toDto(savedProduct);
     }
     @Override
-    public List<ProductResponse> getAllProducts() {
-        List<Product> products = productRepository.findAll();
+    public List<ProductResponse> getAllProducts(UUID categoryId) {
+        List<Product> products;
+        if (categoryId != null) {
+            if (!categoryRepository.existsById(categoryId)) {
+                throw new ResourceNotFoundException("Category not found with id: " + categoryId);
+            }
+            products = productRepository.findByProductCategoryId(categoryId);
+        } else {
+            products = productRepository.findAll();
+        }
 
         if (products.isEmpty()) {
             throw new ResourceNotFoundException("No registered products were found");
