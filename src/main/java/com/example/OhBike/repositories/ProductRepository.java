@@ -10,5 +10,5 @@ import java.util.UUID;
 public interface ProductRepository extends JpaRepository<Product, UUID> {
     List<Product> findByProductCategoryId(UUID id);
     boolean existsByNameIgnoreCase(String name);
-    List<Product> findByProductCategoryAndAvailable(ProductCategory category, Boolean available);
+    boolean existsByProductCategoryId(UUID categoryId);
 }
