@@ -7,6 +7,11 @@ spring:
     username: ${DB_USER}
     password: ${DB_PASSWORD}
 
+  security:
+    user:
+      name: admin
+      password: admin123
+
   jpa:
     show-sql: false
     hibernate:
