@@ -21,27 +21,37 @@ public class DiscountController {
 
     @PostMapping
     public ResponseEntity<GeneralResponse> create(@Valid @RequestBody DiscountRequest request) {
-        return buildResponse("Descuento creado exitosamente", HttpStatus.CREATED, discountService.createDiscount(request));
+        return buildResponse("Descuento creado", HttpStatus.CREATED, discountService.createDiscount(request));
     }
 
-    @GetMapping("/active")
+    @GetMapping("api/discounts/active")
     public ResponseEntity<GeneralResponse> findAllActive() {
         return buildResponse("Descuentos activos encontrados", HttpStatus.OK, discountService.findAllActiveDiscount());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("api/discounts/{id}")
     public ResponseEntity<GeneralResponse> getById(@PathVariable UUID id) {
         return buildResponse("Descuento encontrado", HttpStatus.OK, discountService.getByIdDiscount(id));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("api/discounts/{id}")
     public ResponseEntity<GeneralResponse> update(@PathVariable UUID id, @Valid @RequestBody DiscountRequest request) {
         return buildResponse("Descuento se ha actualizado exitosamente", HttpStatus.OK, discountService.updateDiscount(id, request));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("api/discounts/{id}")
     public ResponseEntity<GeneralResponse> delete(@PathVariable UUID id) {
-        return buildResponse("Descuento se ha eliminado exitosamente", HttpStatus.OK, discountService.deleteDiscount(id));
+        discountService.deleteDiscount(id);
+        return ResponseEntity.ok(GeneralResponse.builder()
+                .message("Descuento eliminado exitosamente.")
+                .status(HttpStatus.OK.value())
+                .time(LocalDateTime.now())
+                .build());
+    }
+
+    @GetMapping
+    public ResponseEntity<GeneralResponse> getAllActiveDiscounts() {
+        return buildResponse("Lista de descuentos activos", HttpStatus.OK, discountService.findAllActiveDiscount());
     }
 
     private ResponseEntity<GeneralResponse> buildResponse(String message, HttpStatus status, Object data) {

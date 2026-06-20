@@ -17,14 +17,14 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DiscountRequest {
-    @NotBlank(message = "El nombre del descuento es obligatorio")
+    @NotBlank(message = "El nombre es obligatorio")
     private String name;
 
     @NotNull(message = "El tipo de descuento es obligatorio")
     private DiscountType discountType;
 
-    @NotNull(message = "El valor del descuento es obligatorio")
-    @Min(value = 0, message = "El valor debe ser mayor a 0")
+    @NotNull(message = "El valor es obligatorio")
+    @Min(value = 0, message = "El valor debe ser mayor o igual a 0")
     private Float value;
 
     @NotNull(message = "El estado del descuento es obligatorio")

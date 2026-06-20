@@ -2,7 +2,6 @@ package com.example.OhBike.services.impl;
 
 import com.example.OhBike.dto.request.DiscountRequest;
 import com.example.OhBike.dto.response.DiscountResponse;
-import com.example.OhBike.dto.response.GeneralResponse;
 import com.example.OhBike.entities.Discount;
 import com.example.OhBike.exceptions.BusinessRuleException;
 import com.example.OhBike.exceptions.ResourceNotFoundException;
@@ -15,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,44 +24,32 @@ public class DiscountServiceImpl implements DiscountService {
 
     @Override
     @Transactional
-    public GeneralResponse createDiscount(DiscountRequest request) {
+    public DiscountResponse createDiscount(DiscountRequest request) {
         validateDates(request);
         Discount entity = discountMapper.toEntity(request);
         Discount saved = discountRepository.save(entity);
-
-        return GeneralResponse.builder()
-                .message("Descuento creado exitosamente.")
-                .data(discountMapper.toDto(saved))
-                .build();
+        return discountMapper.toDto(saved);
     }
 
     @Override
     @Transactional
-    public GeneralResponse updateDiscount(UUID id, DiscountRequest request) {
+    public DiscountResponse updateDiscount(UUID id, DiscountRequest request) {
         validateDates(request);
         Discount entity = discountRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Descuento no encontrado con ID: " + id));
-
         discountMapper.updateEntity(entity, request);
         Discount updated = discountRepository.save(entity);
 
-        return GeneralResponse.builder()
-                .message("Descuento actualizado exitosamente.")
-                .data(discountMapper.toDto(updated))
-                .build();
+        return discountMapper.toDto(updated);
     }
 
     @Override
     @Transactional
-    public GeneralResponse deleteDiscount(UUID id) {
-        Discount entity = discountRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Descuento no encontrado con ID: " + id));
-        discountRepository.delete(entity);
-
-        return GeneralResponse.builder()
-                .message("Descuento eliminado exitosamente.")
-                .data(null)
-                .build();
+    public void deleteDiscount(UUID id) {
+        Discount discount = discountRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Descuento no encontrado"));
+        discount.setActive(false);
+        discountRepository.save(discount);
     }
 
     @Override
@@ -77,7 +65,7 @@ public class DiscountServiceImpl implements DiscountService {
     public List<DiscountResponse> findAllActiveDiscount() {
         return discountRepository.findByActiveTrue().stream()
                 .map(discountMapper::toDto)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     private void validateDates(DiscountRequest request) {
