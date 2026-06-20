@@ -1,4 +1,4 @@
-package com.example.OhBike.repositories;
+package com.example.OhBike.repository;
 
 import com.example.OhBike.entities.ShippingMethod;
 import org.springframework.data.jpa.repository.JpaRepository;

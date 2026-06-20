@@ -1,10 +1,10 @@
-package com.example.OhBike.services;
+package com.example.OhBike.service;
 
-import com.example.OhBike.dtos.GeneralResponse;
-import com.example.OhBike.dtos.request.ShippingMethodRequest;
-import com.example.OhBike.dtos.response.ShippingMethodResponse;
+import com.example.OhBike.dto.response.GeneralResponse;
+import com.example.OhBike.dto.request.ShippingMethodRequest;
+import com.example.OhBike.dto.response.ShippingMethodResponse;
 import com.example.OhBike.entities.ShippingMethod;
-import com.example.OhBike.repositories.ShippingMethodRepository;
+import com.example.OhBike.repository.ShippingMethodRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;

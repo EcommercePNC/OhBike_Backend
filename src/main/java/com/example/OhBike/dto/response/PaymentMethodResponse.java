@@ -1,4 +1,4 @@
-package com.example.OhBike.dtos.response;
+package com.example.OhBike.dto.response;
 
 import java.util.UUID;
 

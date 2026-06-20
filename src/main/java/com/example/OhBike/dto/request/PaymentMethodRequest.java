@@ -1,4 +1,4 @@
-package com.example.OhBike.dtos.request;
+package com.example.OhBike.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

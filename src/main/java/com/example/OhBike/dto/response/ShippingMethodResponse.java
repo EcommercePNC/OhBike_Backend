@@ -1,4 +1,4 @@
-package com.example.OhBike.dtos.response;
+package com.example.OhBike.dto.response;
 
 import java.math.BigDecimal;
 import java.util.UUID;

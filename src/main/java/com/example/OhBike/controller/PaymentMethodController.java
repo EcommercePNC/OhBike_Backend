@@ -1,9 +1,9 @@
-package com.example.OhBike.controllers;
+package com.example.OhBike.controller;
 
 import jakarta.validation.Valid;
-import com.example.OhBike.dtos.GeneralResponse;
-import com.example.OhBike.dtos.request.PaymentMethodRequest;
-import com.example.OhBike.services.PaymentMethodService;
+import com.example.OhBike.dto.response.GeneralResponse;
+import com.example.OhBike.dto.request.PaymentMethodRequest;
+import com.example.OhBike.service.PaymentMethodService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

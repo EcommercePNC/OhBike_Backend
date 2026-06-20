@@ -1,4 +1,4 @@
-package com.example.OhBike.dtos;
+package com.example.OhBike.dto.response;
 
 public record GeneralResponse(
         String message,

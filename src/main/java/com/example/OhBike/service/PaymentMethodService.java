@@ -1,10 +1,10 @@
-package com.example.OhBike.services;
+package com.example.OhBike.service;
 
-import com.example.OhBike.dtos.GeneralResponse;
-import com.example.OhBike.dtos.request.PaymentMethodRequest;
-import com.example.OhBike.dtos.response.PaymentMethodResponse;
+import com.example.OhBike.dto.response.GeneralResponse;
+import com.example.OhBike.dto.request.PaymentMethodRequest;
+import com.example.OhBike.dto.response.PaymentMethodResponse;
 import com.example.OhBike.entities.PaymentMethod;
-import com.example.OhBike.repositories.PaymentMethodRepository;
+import com.example.OhBike.repository.PaymentMethodRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
