@@ -2,6 +2,7 @@ package com.example.OhBike.services.impl;
 
 import com.example.OhBike.dto.request.CouponRequest;
 import com.example.OhBike.dto.response.CouponResponse;
+import com.example.OhBike.dto.response.ValidationResponse;
 import com.example.OhBike.entities.Coupon;
 import com.example.OhBike.entities.Discount;
 import com.example.OhBike.exceptions.BusinessRuleException;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -31,9 +33,15 @@ public class CouponServiceImpl implements CouponService {
         if (couponRepository.existsByCode(request.getCode())) {
             throw new BusinessRuleException("El código de cupón ya existe: " + request.getCode());
         }
-
+        if (request.getExpirationDate().isBefore(LocalDate.now())) {
+            throw new BusinessRuleException("La fecha de expiración no puede ser una fecha pasada");
+        }
         Discount discount = discountRepository.findById(request.getDiscountId())
-                .orElseThrow(() -> new ResourceNotFoundException("Descuento no encontrado con ID: " + request.getDiscountId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Descuento no encontrado"));
+
+        if (!discount.getActive()) {
+            throw new BusinessRuleException("No puedes crear un cupón para un descuento inactivo");
+        }
 
         Coupon coupon = couponMapper.toEntityCreate(request, discount);
         return couponMapper.toDto(couponRepository.save(coupon));
@@ -83,5 +91,55 @@ public class CouponServiceImpl implements CouponService {
         CouponResponse response = couponMapper.toDto(coupon);
         couponRepository.deleteById(id);
         return response;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ValidationResponse validateCoupon(String code, Double purchaseAmount) {
+        Coupon coupon = couponRepository.findByCode(code)
+                .orElseThrow(() -> new ResourceNotFoundException("Cupón no encontrado con código: " + code));
+
+        if (coupon.getExpirationDate().isBefore(LocalDate.now())) {
+            throw new BusinessRuleException("El cupón ha expirado");
+        }
+
+        if (coupon.getUsedCount() >= coupon.getMaxUses()) {
+            throw new BusinessRuleException("Cupón esta agotado");
+        }
+
+        return ValidationResponse.builder()
+                .code(coupon.getCode())
+                .isValid(true)
+                .message("Cupón válido")
+                .discountValue(Double.valueOf(coupon.getDiscount().getValue()))
+                .discountType(coupon.getDiscount().getDiscountType().name())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public CouponResponse redeemCoupon(String code) {
+        Coupon coupon = couponRepository.findByCode(code)
+                .orElseThrow(() -> new ResourceNotFoundException("Cupón no encontrado"));
+
+        if (coupon.getUsedCount() >= coupon.getMaxUses()) {
+            throw new BusinessRuleException("Cupón agotado");
+        }
+
+        coupon.setUsedCount(coupon.getUsedCount() + 1);
+        return couponMapper.toDto(couponRepository.save(coupon));
+    }
+
+    @Override
+    @Transactional
+    public CouponResponse cancelCoupon(String code) {
+        Coupon coupon = couponRepository.findByCode(code)
+                .orElseThrow(() -> new ResourceNotFoundException("Cupón no encontrado"));
+
+        if (coupon.getUsedCount() > 0) {
+            coupon.setUsedCount(coupon.getUsedCount() - 1);
+        }
+
+        return couponMapper.toDto(couponRepository.save(coupon));
     }
 }
