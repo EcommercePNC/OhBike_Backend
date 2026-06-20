@@ -1,4 +1,4 @@
-package com.example.OhBike.entities;
+package com.example.OhBike.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
