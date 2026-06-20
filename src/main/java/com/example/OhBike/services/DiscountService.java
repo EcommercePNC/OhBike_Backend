@@ -12,4 +12,5 @@ public interface DiscountService {
     void deleteDiscount(UUID id);
     DiscountResponse getByIdDiscount(UUID id);
     List<DiscountResponse> findAllActiveDiscount();
+
 }

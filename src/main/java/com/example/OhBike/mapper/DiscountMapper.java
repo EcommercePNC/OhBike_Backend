@@ -18,16 +18,13 @@ public class DiscountMapper {
                 .endDate(request.getEndDate())
                 .build();
     }
-
     public DiscountResponse toDto(Discount entity) {
         return DiscountResponse.builder()
                 .id(entity.getId())
                 .name(entity.getName())
                 .discountType(entity.getDiscountType())
-                .value(entity.getValue())
+                .value(entity.getValue() != null ? entity.getValue().floatValue() : 0.0f)
                 .active(entity.getActive())
-                .startDate(entity.getStartDate())
-                .endDate(entity.getEndDate())
                 .build();
     }
 

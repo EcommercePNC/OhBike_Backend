@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -111,7 +113,7 @@ public class CouponServiceImpl implements CouponService {
                 .code(coupon.getCode())
                 .isValid(true)
                 .message("Cupón válido")
-                .discountValue(Double.valueOf(coupon.getDiscount().getValue()))
+                .discountValue(coupon.getDiscount().getValue().doubleValue())
                 .discountType(coupon.getDiscount().getDiscountType().name())
                 .build();
     }
@@ -141,5 +143,23 @@ public class CouponServiceImpl implements CouponService {
         }
 
         return couponMapper.toDto(couponRepository.save(coupon));
+    }
+
+    public BigDecimal applyDiscount(BigDecimal originalPrice, Coupon coupon) {
+        Discount discount = coupon.getDiscount();
+        BigDecimal discountValue = BigDecimal.valueOf(discount.getValue().doubleValue());
+
+        return switch (discount.getDiscountType()) {
+            case PERCENTAGE -> {
+                BigDecimal percentage = discountValue.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+                yield originalPrice.subtract(originalPrice.multiply(percentage));
+            }
+            case FIXED_AMOUNT -> {
+                yield originalPrice.subtract(discountValue);
+            }
+            case NONE -> {
+                yield originalPrice;
+            }
+        };
     }
 }

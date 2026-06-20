@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
@@ -25,7 +26,7 @@ public class DiscountRequest {
 
     @NotNull(message = "El valor es obligatorio")
     @Min(value = 0, message = "El valor debe ser mayor o igual a 0")
-    private Float value;
+    private BigDecimal value;;
 
     @NotNull(message = "El estado del descuento es obligatorio")
     private Boolean active;

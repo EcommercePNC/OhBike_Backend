@@ -24,22 +24,22 @@ public class DiscountController {
         return buildResponse("Descuento creado", HttpStatus.CREATED, discountService.createDiscount(request));
     }
 
-    @GetMapping("api/discounts/active")
+    @GetMapping("/active")
     public ResponseEntity<GeneralResponse> findAllActive() {
         return buildResponse("Descuentos activos encontrados", HttpStatus.OK, discountService.findAllActiveDiscount());
     }
 
-    @GetMapping("api/discounts/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<GeneralResponse> getById(@PathVariable UUID id) {
         return buildResponse("Descuento encontrado", HttpStatus.OK, discountService.getByIdDiscount(id));
     }
 
-    @PutMapping("api/discounts/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<GeneralResponse> update(@PathVariable UUID id, @Valid @RequestBody DiscountRequest request) {
         return buildResponse("Descuento se ha actualizado exitosamente", HttpStatus.OK, discountService.updateDiscount(id, request));
     }
 
-    @DeleteMapping("api/discounts/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<GeneralResponse> delete(@PathVariable UUID id) {
         discountService.deleteDiscount(id);
         return ResponseEntity.ok(GeneralResponse.builder()

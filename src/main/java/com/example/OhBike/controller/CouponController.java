@@ -1,6 +1,7 @@
 package com.example.OhBike.controller;
 
 import com.example.OhBike.dto.request.CouponRequest;
+import com.example.OhBike.dto.request.CouponValidationRequest;
 import com.example.OhBike.dto.response.GeneralResponse;
 import com.example.OhBike.services.CouponService;
 import jakarta.validation.Valid;
@@ -29,34 +30,33 @@ public class CouponController {
         return buildResponse("Cupones encontrados", HttpStatus.OK, couponService.getAllCoupons());
     }
 
-    @GetMapping("api/coupons/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<GeneralResponse> getByIdCoupon(@PathVariable UUID id) {
         return buildResponse("Cupón se ha encontrado", HttpStatus.OK, couponService.getByIdCoupon(id));
     }
 
-    @PutMapping("api/coupons/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<GeneralResponse> updateCoupon(@Valid @RequestBody CouponRequest request, @PathVariable UUID id) {
         return buildResponse("Cupón se ha actualizado exitosamente", HttpStatus.OK, couponService.updateCoupon(request, id));
     }
 
-    @DeleteMapping("api/coupons/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<GeneralResponse> deleteCoupon(@PathVariable UUID id) {
         return buildResponse("Cupón se ha eliminado exitosamente", HttpStatus.OK, couponService.deleteCoupon(id));
     }
 
-    @GetMapping("api/coupons/validate")
-    public ResponseEntity<GeneralResponse> validateCoupon(
-            @RequestParam String code,
-            @RequestParam Double amount) {
-        return buildResponse("Validación exitosa", HttpStatus.OK, couponService.validateCoupon(code, amount));
+    @PostMapping("/validate")
+    public ResponseEntity<GeneralResponse> validateCoupon(@RequestBody CouponValidationRequest request) {
+        return buildResponse("Validación exitosa", HttpStatus.OK,
+                couponService.validateCoupon(request.getCode(), request.getPurchaseAmount()));
     }
 
-    @PatchMapping("api/coupons/{code}/redeem")
+    @PatchMapping("/{code}/redeem")
     public ResponseEntity<GeneralResponse> redeemCoupon(@PathVariable String code) {
         return buildResponse("Cupón redimido exitosamente", HttpStatus.OK, couponService.redeemCoupon(code));
     }
 
-    @PatchMapping("api/coupons/{code}/cancel")
+    @PatchMapping("/{code}/cancel")
     public ResponseEntity<GeneralResponse> cancelCoupon(@PathVariable String code) {
         return buildResponse("Cupón cancelado exitosamente", HttpStatus.OK, couponService.cancelCoupon(code));
     }
