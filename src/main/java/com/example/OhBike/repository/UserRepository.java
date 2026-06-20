@@ -1,6 +1,6 @@
-package com.example.OhBike.repositories;
+package com.example.OhBike.repository;
 
-import com.example.OhBike.entities.User;
+import com.example.OhBike.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

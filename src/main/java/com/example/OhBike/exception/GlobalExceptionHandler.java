@@ -20,6 +20,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest request) {
         Map<String, String> errors = new HashMap<>();
+        //recorre para validar todos los campos
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
             errors.put(error.getField(), error.getDefaultMessage());
         }
@@ -41,9 +42,10 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(request.getRequestURI(), "Data integrity violation. A unique constraint was breached.", HttpStatus.CONFLICT);
     }
 
+    //quitar luego de pruebas ex.message()
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleGeneral(Exception ex, HttpServletRequest request) {
-        return buildErrorResponse(request.getRequestURI(), "Internal server error: " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        return buildErrorResponse(request.getRequestURI(), "Internal server error " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private ResponseEntity<ApiErrorResponse> buildErrorResponse(String uri, Object message, HttpStatus status) {

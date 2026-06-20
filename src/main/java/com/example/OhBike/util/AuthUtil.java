@@ -1,4 +1,4 @@
-package com.example.OhBike.utils;
+package com.example.OhBike.util;
 
 import java.util.UUID;
 
