@@ -1,4 +1,4 @@
-package com.example.OhBike.mapper;
+package com.example.OhBike.common.mapper;
 
 import com.example.OhBike.dto.request.DiscountRequest;
 import com.example.OhBike.dto.response.DiscountResponse;
