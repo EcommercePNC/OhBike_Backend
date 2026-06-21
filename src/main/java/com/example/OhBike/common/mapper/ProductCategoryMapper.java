@@ -1,4 +1,4 @@
-package com.example.OhBike.common.mappers;
+package com.example.OhBike.common.mapper;
 
 import com.example.OhBike.dto.request.ProductCategoryRequest;
 import com.example.OhBike.dto.request.UpdateProductCategoryRequest;
