@@ -1,4 +1,4 @@
-package com.example.OhBike.entities.enums;
+package com.example.OhBike.entity.enums;
 
 public enum DiscountType {
     PERCENTAGE,

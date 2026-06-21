@@ -1,6 +1,6 @@
-package com.example.OhBike.entities;
+package com.example.OhBike.entity;
 
-import com.example.OhBike.entities.enums.DiscountType;
+import com.example.OhBike.entity.enums.DiscountType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;

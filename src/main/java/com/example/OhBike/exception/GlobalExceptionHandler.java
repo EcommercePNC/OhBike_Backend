@@ -1,4 +1,4 @@
-package com.example.OhBike.exceptions;
+package com.example.OhBike.exception;
 
 import com.example.OhBike.dto.response.GeneralResponse;
 import org.springframework.http.HttpStatus;

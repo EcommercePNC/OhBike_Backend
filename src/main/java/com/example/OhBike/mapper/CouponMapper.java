@@ -2,8 +2,8 @@ package com.example.OhBike.mapper;
 
 import com.example.OhBike.dto.request.CouponRequest;
 import com.example.OhBike.dto.response.CouponResponse;
-import com.example.OhBike.entities.Coupon;
-import com.example.OhBike.entities.Discount;
+import com.example.OhBike.entity.Coupon;
+import com.example.OhBike.entity.Discount;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
