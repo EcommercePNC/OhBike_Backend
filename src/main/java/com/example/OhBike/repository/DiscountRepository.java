@@ -1,6 +1,6 @@
-package com.example.OhBike.repositories;
+package com.example.OhBike.repository;
 
-import com.example.OhBike.entities.Discount;
+import com.example.OhBike.entity.Discount;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 

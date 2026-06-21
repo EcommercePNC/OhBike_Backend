@@ -2,7 +2,7 @@ package com.example.OhBike.mapper;
 
 import com.example.OhBike.dto.request.DiscountRequest;
 import com.example.OhBike.dto.response.DiscountResponse;
-import com.example.OhBike.entities.Discount;
+import com.example.OhBike.entity.Discount;
 import org.springframework.stereotype.Component;
 
 @Component

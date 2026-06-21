@@ -1,6 +1,6 @@
 package com.example.OhBike.dto.request;
 
-import com.example.OhBike.entities.enums.DiscountType;
+import com.example.OhBike.entity.enums.DiscountType;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

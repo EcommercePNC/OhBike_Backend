@@ -1,4 +1,4 @@
-package com.example.OhBike.entities;
+package com.example.OhBike.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
@@ -8,7 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
 @Table(name = "coupon")
