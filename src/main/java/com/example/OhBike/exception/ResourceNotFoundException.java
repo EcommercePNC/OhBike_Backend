@@ -1,4 +1,4 @@
-package com.example.OhBike.exception;
+package com.example.OhBike.exceptions;
 
 public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(String message) {
