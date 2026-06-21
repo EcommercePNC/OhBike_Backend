@@ -1,4 +1,4 @@
-package com.example.OhBike.services;
+package com.example.OhBike.service;
 
 import com.example.OhBike.dto.response.WishlistResponse;
 import com.example.OhBike.repository.ProductRepository;

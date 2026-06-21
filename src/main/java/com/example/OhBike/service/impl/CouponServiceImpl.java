@@ -1,4 +1,4 @@
-package com.example.OhBike.services.impl;
+package com.example.OhBike.service.impl;
 
 import com.example.OhBike.dto.request.CouponRequest;
 import com.example.OhBike.dto.response.CouponResponse;
@@ -10,7 +10,7 @@ import com.example.OhBike.exception.ResourceNotFoundException;
 import com.example.OhBike.mapper.CouponMapper;
 import com.example.OhBike.repository.CouponRepository;
 import com.example.OhBike.repository.DiscountRepository;
-import com.example.OhBike.services.CouponService;
+import com.example.OhBike.service.CouponService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

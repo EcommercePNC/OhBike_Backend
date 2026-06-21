@@ -3,7 +3,7 @@ package com.example.OhBike.controller;
 import com.example.OhBike.dto.request.CouponRequest;
 import com.example.OhBike.dto.request.CouponValidationRequest;
 import com.example.OhBike.dto.response.GeneralResponse;
-import com.example.OhBike.services.CouponService;
+import com.example.OhBike.service.CouponService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
