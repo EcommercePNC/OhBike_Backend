@@ -1,9 +1,9 @@
-package com.example.OhBike.controllers;
+package com.example.OhBike.controller;
 
 import com.example.OhBike.dto.request.ProductRequest;
 import com.example.OhBike.dto.request.UpdateProductRequest;
 import com.example.OhBike.dto.response.GeneralResponse;
-import com.example.OhBike.services.ProductService;
+import com.example.OhBike.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

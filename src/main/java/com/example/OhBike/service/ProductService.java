@@ -1,4 +1,4 @@
-package com.example.OhBike.services;
+package com.example.OhBike.service;
 
 import com.example.OhBike.dto.request.ProductRequest;
 import com.example.OhBike.dto.request.UpdateProductRequest;

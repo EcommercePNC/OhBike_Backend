@@ -1,15 +1,15 @@
-package com.example.OhBike.services.impl;
+package com.example.OhBike.service.impl;
 
 import com.example.OhBike.common.mappers.ProductCategoryMapper;
 import com.example.OhBike.dto.request.ProductCategoryRequest;
 import com.example.OhBike.dto.request.UpdateProductCategoryRequest;
 import com.example.OhBike.dto.response.ProductCategoryResponse;
-import com.example.OhBike.entities.ProductCategory;
-import com.example.OhBike.exceptions.BusinessRuleException;
-import com.example.OhBike.exceptions.ResourceNotFoundException;
-import com.example.OhBike.repositories.ProductCategoryRepository;
-import com.example.OhBike.repositories.ProductRepository;
-import com.example.OhBike.services.ProductCategoryService;
+import com.example.OhBike.entity.ProductCategory;
+import com.example.OhBike.exception.BusinessRuleException;
+import com.example.OhBike.exception.ResourceNotFoundException;
+import com.example.OhBike.repository.ProductCategoryRepository;
+import com.example.OhBike.repository.ProductRepository;
+import com.example.OhBike.service.ProductCategoryService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

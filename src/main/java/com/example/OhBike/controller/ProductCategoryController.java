@@ -1,10 +1,10 @@
-package com.example.OhBike.controllers;
+package com.example.OhBike.controller;
 
 
 import com.example.OhBike.dto.request.ProductCategoryRequest;
 import com.example.OhBike.dto.request.UpdateProductCategoryRequest;
 import com.example.OhBike.dto.response.GeneralResponse;
-import com.example.OhBike.services.ProductCategoryService;
+import com.example.OhBike.service.ProductCategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

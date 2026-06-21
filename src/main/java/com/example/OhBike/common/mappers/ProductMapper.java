@@ -3,8 +3,8 @@ package com.example.OhBike.common.mappers;
 import com.example.OhBike.dto.request.ProductRequest;
 import com.example.OhBike.dto.request.UpdateProductRequest;
 import com.example.OhBike.dto.response.ProductResponse;
-import com.example.OhBike.entities.Product;
-import com.example.OhBike.entities.ProductCategory;
+import com.example.OhBike.entity.Product;
+import com.example.OhBike.entity.ProductCategory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

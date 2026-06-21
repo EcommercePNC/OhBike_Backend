@@ -1,4 +1,4 @@
-package com.example.OhBike.exceptions;
+package com.example.OhBike.exception;
 
 import com.example.OhBike.dto.response.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
