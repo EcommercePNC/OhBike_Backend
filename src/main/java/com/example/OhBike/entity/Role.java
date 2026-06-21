@@ -6,19 +6,23 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "roles")
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
+
 public class Role {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "rol_id")
-    private Long id;
+    private UUID id;
 
     @Column(nullable = false, unique = true)
     private String name; // "CLIENTE", "ADMIN", "VENDEDOR"
 }
+

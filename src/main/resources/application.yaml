@@ -7,11 +7,6 @@ spring:
     username: ${DB_USER}
     password: ${DB_PASSWORD}
 
-  security:
-    user:
-      name: admin
-      password: admin123
-
   jpa:
     show-sql: false
     hibernate:
@@ -19,3 +14,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 60000
