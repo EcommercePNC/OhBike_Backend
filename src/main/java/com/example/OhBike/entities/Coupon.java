@@ -8,7 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
 @Table(name = "coupon")
@@ -27,11 +26,11 @@ public class Coupon {
     private String code;
 
     @Column(nullable = false)
-    @Min(value = 0, message = "Debe ser mayor a 0")
+    @Min(value = 0, message = "Must be greater than 0")
     private Integer maxUses;
 
     @Column(nullable = false)
-    @Min(value = 0, message = "Debe ser mayor a 0")
+    @Min(value = 0, message = "Must be greater than 0")
     private Integer usedCount;
 
     @Column(nullable = false)

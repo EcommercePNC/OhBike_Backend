@@ -36,7 +36,7 @@ public class DiscountServiceImpl implements DiscountService {
     public DiscountResponse updateDiscount(UUID id, DiscountRequest request) {
         validateDates(request);
         Discount entity = discountRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Descuento no encontrado con ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Discount not found with ID: " + id));
         discountMapper.updateEntity(entity, request);
         Discount updated = discountRepository.save(entity);
 
@@ -47,7 +47,7 @@ public class DiscountServiceImpl implements DiscountService {
     @Transactional
     public void deleteDiscount(UUID id) {
         Discount discount = discountRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Descuento no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Discount not found"));
         discount.setActive(false);
         discountRepository.save(discount);
     }
@@ -57,7 +57,7 @@ public class DiscountServiceImpl implements DiscountService {
     public DiscountResponse getByIdDiscount(UUID id) {
         return discountRepository.findById(id)
                 .map(discountMapper::toDto)
-                .orElseThrow(() -> new ResourceNotFoundException("Descuento no encontrado con ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Discount not found with ID: " + id));
     }
 
     @Override
@@ -70,7 +70,7 @@ public class DiscountServiceImpl implements DiscountService {
 
     private void validateDates(DiscountRequest request) {
         if (request.getStartDate().isAfter(request.getEndDate())) {
-            throw new BusinessRuleException("La fecha de inicio no puede ser posterior a la que finalice");
+            throw new BusinessRuleException("Start date cannot be after the end date");
         }
     }
 }

@@ -17,7 +17,7 @@ public class GlobalExceptionHandler {
         String errors = ex.getBindingResult().getFieldErrors().stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .reduce((a, b) -> a + ", " + b)
-                .orElse("Error de validación");
+                .orElse("Validation error");
 
         return buildErrorResponse(errors, HttpStatus.BAD_REQUEST);
     }

@@ -14,19 +14,18 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CouponRequest {
-    @NotBlank(message = "El código no puede estar vacío")
-    @Size(min = 3, max = 10, message = "El código debe cumplir con el numero de caracteres")
+    @NotBlank(message = "The code cannot be empty")
+    @Size(min = 3, max = 10, message = "The code must be between 3 and 10 characters")
     private String code;
 
-    @NotNull(message = "El número máximo de usos es obligatorio")
-    @Min(value = 1, message = "El cupón debe permitir al menos 1 uso")
+    @NotNull(message = "The maximum number of uses is mandatory")
+    @Min(value = 1, message = "The coupon must allow at least 1 use")
     private Integer maxUses;
 
-    @NotNull(message = "La fecha de expiración es obligatoria")
-    @FutureOrPresent(message = "La fecha de expiración debe ser hoy o una fecha cercana")
+    @NotNull(message = "The expiration date is mandatory")
+    @FutureOrPresent(message = "The expiration date must be today or a future date")
     private LocalDate expirationDate;
 
-    @NotNull(message = "El ID del descuento es obligatorio")
+    @NotNull(message = "The discount ID is mandatory")
     private UUID discountId;
-
 }
