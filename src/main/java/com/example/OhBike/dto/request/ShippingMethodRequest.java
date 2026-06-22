@@ -7,11 +7,11 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
 public record ShippingMethodRequest(
-        @NotBlank(message = "El nombre es requerido")
-        @Size(max = 50, message = "El nombre no debe de exceder los 50 caracteres")
+        @NotBlank(message = "The name is required")
+        @Size(max = 50, message = "The name must not exceed 50 characters")
         String name,
 
-        @NotNull(message = "El precio es requerido")
-        @PositiveOrZero(message = "El precio debe de ser cero o positivo")
+        @NotNull(message = "The price is required")
+        @PositiveOrZero(message = "The price must be zero or positive.")
         BigDecimal baseCost
 ) {}

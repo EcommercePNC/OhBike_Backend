@@ -2,7 +2,7 @@ package com.example.OhBike.common.mapper;
 
 import com.example.OhBike.dto.request.PaymentMethodRequest;
 import com.example.OhBike.dto.response.PaymentMethodResponse;
-import com.example.OhBike.entities.PaymentMethod;
+import com.example.OhBike.entity.PaymentMethod;
 import org.springframework.stereotype.Component;
 
 @Component

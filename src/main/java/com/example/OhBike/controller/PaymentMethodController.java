@@ -20,9 +20,8 @@ public class PaymentMethodController {
 
     @PostMapping
     public ResponseEntity<GeneralResponse> create(@Valid @RequestBody PaymentMethodRequest request) {
-        // Ejecutamos el servicio y guardamos la respuesta del record
+
         GeneralResponse response = paymentMethodService.create(request);
-        // Retornamos el objeto response explícitamente dentro de la entidad HTTP
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
