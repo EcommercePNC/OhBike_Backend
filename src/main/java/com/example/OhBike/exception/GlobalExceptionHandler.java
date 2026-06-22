@@ -42,6 +42,22 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(request.getRequestURI(), "Data integrity violation. A unique constraint was breached.", HttpStatus.CONFLICT);
     }
 
+   // JWT Auth filter handler
+    @ExceptionHandler(io.jsonwebtoken.ExpiredJwtException.class)
+    public ResponseEntity<ApiErrorResponse> handleExpiredJwt(io.jsonwebtoken.ExpiredJwtException ex, HttpServletRequest request) {
+        return buildErrorResponse(request.getRequestURI(), "The token has expired. Please log in again.", HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(io.jsonwebtoken.security.SignatureException.class)
+    public ResponseEntity<ApiErrorResponse> handleSignatureException(io.jsonwebtoken.security.SignatureException ex, HttpServletRequest request) {
+        return buildErrorResponse(request.getRequestURI(), "Invalid token signature.", HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(io.jsonwebtoken.MalformedJwtException.class)
+    public ResponseEntity<ApiErrorResponse> handleMalformedJwt(io.jsonwebtoken.MalformedJwtException ex, HttpServletRequest request) {
+        return buildErrorResponse(request.getRequestURI(), "Token with invalid format.", HttpStatus.BAD_REQUEST);
+    }
+
     //quitar luego de pruebas ex.message()
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleGeneral(Exception ex, HttpServletRequest request) {
