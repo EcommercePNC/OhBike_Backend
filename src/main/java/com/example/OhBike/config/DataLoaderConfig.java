@@ -15,15 +15,15 @@ public class DataLoaderConfig {
     public CommandLineRunner loadData(RoleRepository roleRepository) {
         return args -> {
             if (roleRepository.count() == 0) {
-                System.out.println("Cargando roles por defecto en la base de datos...");
+                System.out.println("loading roles...");
 
-                Role cliente = Role.builder().name("CLIENTE").build();
+                Role client = Role.builder().name("CLIENT").build();
                 Role admin = Role.builder().name("ADMIN").build();
-                Role vendedor = Role.builder().name("VENDEDOR").build();
+                Role seller = Role.builder().name("SELLER").build();
 
-                roleRepository.saveAll(List.of(cliente, admin, vendedor));
+                roleRepository.saveAll(List.of(client, admin, seller));
 
-                System.out.println("¡Roles cargados exitosamente!");
+                System.out.println("roles loaded successfully.");
             }
         };
     }

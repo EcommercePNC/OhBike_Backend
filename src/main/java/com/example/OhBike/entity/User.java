@@ -35,10 +35,10 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    @Column(name = "phone")
+    @Column(nullable = false, unique = true)
     private String phone;
 
-    @Column(name = "address")
+    @Column(nullable = false)
     private String address;
 
     @ManyToOne

@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -27,6 +28,14 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(request.getRequestURI(), errors, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(DuplicateFieldException.class)
+    public ResponseEntity<ApiErrorResponse> handleDuplicateField(DuplicateFieldException ex, HttpServletRequest request) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put(ex.getField(), ex.getMessage());
+
+        return buildErrorResponse(request.getRequestURI(), errors, HttpStatus.CONFLICT);
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
         return buildErrorResponse(request.getRequestURI(), ex.getMessage(), HttpStatus.NOT_FOUND);
@@ -40,6 +49,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex, HttpServletRequest request) {
         return buildErrorResponse(request.getRequestURI(), "Data integrity violation. A unique constraint was breached.", HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiErrorResponse> handleBadCredentials(BadCredentialsException ex, HttpServletRequest request) {
+        return buildErrorResponse(
+                request.getRequestURI(),
+                "Invalid username or password.",
+                HttpStatus.UNAUTHORIZED
+        );
     }
 
    // JWT Auth filter handler

@@ -23,6 +23,6 @@ public class Role {
     private UUID id;
 
     @Column(nullable = false, unique = true)
-    private String name; // "CLIENTE", "ADMIN", "VENDEDOR"
+    private String name;
 }
 

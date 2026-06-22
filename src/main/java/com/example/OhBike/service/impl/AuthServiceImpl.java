@@ -1,6 +1,7 @@
 package com.example.OhBike.service.impl;
 
 import com.example.OhBike.common.mapper.UserMapper;
+import com.example.OhBike.exception.DuplicateFieldException;
 import com.example.OhBike.repository.RoleRepository;
 import com.example.OhBike.repository.UserRepository;
 import com.example.OhBike.service.AuthService;
@@ -30,10 +31,21 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse register(RegisterRequest request) {
-        Role userRole = roleRepository.findByName("CLIENTE")
+        if(userRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateFieldException("email", "Error: Email already exists.");
+        }
+        if(userRepository.existsByPhone(request.getPhone())) {
+            throw new DuplicateFieldException("phone", "Error: Phone number already registered.");
+        }
+
+        Role userRole = roleRepository.findByName("CLIENT")
                 .orElseThrow(() -> new RuntimeException("Error: Role not found."));
 
-        User user = userMapper.toEntity(request, userRole, passwordEncoder.encode(request.getPassword()));
+        User user = userMapper.toEntity
+                (request,
+                userRole,
+                passwordEncoder.encode(request.getPassword())
+                );
 
         userRepository.save(user);
         String jwtToken = jwtService.generateToken(user);
