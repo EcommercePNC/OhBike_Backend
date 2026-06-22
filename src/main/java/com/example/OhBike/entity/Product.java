@@ -1,4 +1,4 @@
-package com.example.OhBike.entities;
+package com.example.OhBike.entity;
 
 import jakarta.persistence.*;
 
@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @Entity
 @Data
-@Table(name = "Product")
+@Table(name = "product")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

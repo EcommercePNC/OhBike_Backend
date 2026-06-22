@@ -1,4 +1,4 @@
-package com.example.OhBike.entities;
+package com.example.OhBike.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -6,12 +6,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
 import java.util.UUID;
 
 @Entity
 @Data
-@Table(name = "ProductCategory")
+@Table(name = "product_category")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,7 +21,4 @@ public class ProductCategory {
 
     @Column(nullable = false, unique = true)
     private String name;
-
-    @OneToMany(mappedBy = "productCategory", cascade = CascadeType.ALL)
-    private List<Product> products;
 }
