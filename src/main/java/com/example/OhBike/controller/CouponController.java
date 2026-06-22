@@ -22,43 +22,43 @@ public class CouponController {
 
     @PostMapping
     public ResponseEntity<GeneralResponse> createCoupon(@Valid @RequestBody CouponRequest request) {
-        return buildResponse("Cupón creado", HttpStatus.CREATED, couponService.createCoupon(request));
+        return buildResponse("Coupon created successfully", HttpStatus.CREATED, couponService.createCoupon(request));
     }
 
     @GetMapping
     public ResponseEntity<GeneralResponse> getAllCoupons() {
-        return buildResponse("Cupones encontrados", HttpStatus.OK, couponService.getAllCoupons());
+        return buildResponse("Coupons retrieved successfully", HttpStatus.OK, couponService.getAllCoupons());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<GeneralResponse> getByIdCoupon(@PathVariable UUID id) {
-        return buildResponse("Cupón se ha encontrado", HttpStatus.OK, couponService.getByIdCoupon(id));
+        return buildResponse("Coupon found successfully", HttpStatus.OK, couponService.getByIdCoupon(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<GeneralResponse> updateCoupon(@Valid @RequestBody CouponRequest request, @PathVariable UUID id) {
-        return buildResponse("Cupón se ha actualizado exitosamente", HttpStatus.OK, couponService.updateCoupon(request, id));
+        return buildResponse("Coupon updated successfully", HttpStatus.OK, couponService.updateCoupon(request, id));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<GeneralResponse> deleteCoupon(@PathVariable UUID id) {
-        return buildResponse("Cupón se ha eliminado exitosamente", HttpStatus.OK, couponService.deleteCoupon(id));
+        return buildResponse("Coupon deleted successfully", HttpStatus.OK, couponService.deleteCoupon(id));
     }
 
     @PostMapping("/validate")
     public ResponseEntity<GeneralResponse> validateCoupon(@RequestBody CouponValidationRequest request) {
-        return buildResponse("Validación exitosa", HttpStatus.OK,
+        return buildResponse("Validation successful", HttpStatus.OK,
                 couponService.validateCoupon(request.getCode(), request.getPurchaseAmount()));
     }
 
     @PatchMapping("/{code}/redeem")
     public ResponseEntity<GeneralResponse> redeemCoupon(@PathVariable String code) {
-        return buildResponse("Cupón redimido exitosamente", HttpStatus.OK, couponService.redeemCoupon(code));
+        return buildResponse("Coupon redeemed successfully", HttpStatus.OK, couponService.redeemCoupon(code));
     }
 
     @PatchMapping("/{code}/cancel")
     public ResponseEntity<GeneralResponse> cancelCoupon(@PathVariable String code) {
-        return buildResponse("Cupón cancelado exitosamente", HttpStatus.OK, couponService.cancelCoupon(code));
+        return buildResponse("Coupon cancelled successfully", HttpStatus.OK, couponService.cancelCoupon(code));
     }
 
     private ResponseEntity<GeneralResponse> buildResponse(String message, HttpStatus status, Object data) {
