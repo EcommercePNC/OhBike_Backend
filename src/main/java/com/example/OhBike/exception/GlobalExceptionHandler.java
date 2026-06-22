@@ -50,7 +50,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
         assert ex.getRequiredType() != null;
-        String message = String.format("El parámetro '%s' tiene un valor '%s' inválido. Se esperaba el tipo %s.",
+        String message = String.format("The parameter '%s' has an invalid value '%s'. Expected type: %s.",
                 ex.getName(), ex.getValue(), ex.getRequiredType().getSimpleName());
 
         return buildErrorResponse(request.getRequestURI(), message, HttpStatus.BAD_REQUEST);
