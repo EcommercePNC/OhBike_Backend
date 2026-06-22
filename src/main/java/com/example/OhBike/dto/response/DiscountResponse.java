@@ -1,6 +1,6 @@
 package com.example.OhBike.dto.response;
 
-import com.example.OhBike.entities.enums.DiscountType;
+import com.example.OhBike.entity.enums.DiscountType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

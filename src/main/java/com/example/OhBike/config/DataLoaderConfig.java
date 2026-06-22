@@ -1,8 +1,8 @@
 package com.example.OhBike.config;
 
-import com.example.OhBike.entities.Role;
-import com.example.OhBike.repositories.RoleRepository;
-import com.example.OhBike.repositories.UserRepository;
+import com.example.OhBike.entity.Role;
+import com.example.OhBike.repository.RoleRepository;
+import com.example.OhBike.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

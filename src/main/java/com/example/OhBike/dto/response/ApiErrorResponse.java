@@ -7,11 +7,9 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class GeneralResponse {
+public class ApiErrorResponse {
     private String uri;
-    private String message;
+    private Object message;
     private int status;
     private LocalDateTime time;
-    private Object data;
-
 }
