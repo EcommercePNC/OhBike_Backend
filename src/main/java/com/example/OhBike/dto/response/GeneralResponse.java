@@ -1,0 +1,17 @@
+package com.example.OhBike.dto.response;
+
+import lombok.Builder;
+import lombok.Data;
+
+import java.time.LocalDateTime;
+
+@Data
+@Builder
+public class GeneralResponse {
+    private String uri;
+    private String message;
+    private int status;
+    private LocalDateTime time;
+    private Object data;
+
+}
