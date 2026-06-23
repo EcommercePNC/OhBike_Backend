@@ -7,7 +7,7 @@ import com.example.OhBike.entity.Coupon;
 import com.example.OhBike.entity.Discount;
 import com.example.OhBike.exception.BusinessRuleException;
 import com.example.OhBike.exception.ResourceNotFoundException;
-import com.example.OhBike.common.mapper.CouponMapper;
+import com.example.OhBike.mapper.CouponMapper;
 import com.example.OhBike.repository.CouponRepository;
 import com.example.OhBike.repository.DiscountRepository;
 import com.example.OhBike.service.CouponService;

@@ -1,6 +1,6 @@
 package com.example.OhBike.service.impl;
 
-import com.example.OhBike.common.mapper.UserMapper;
+import com.example.OhBike.mapper.UserMapper;
 import com.example.OhBike.dto.request.UserUpdateRequest;
 import com.example.OhBike.dto.response.UserResponse;
 import com.example.OhBike.entity.User;
