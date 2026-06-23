@@ -2,7 +2,6 @@ package com.example.OhBike.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.domain.Persistable; // <-- Importación clave
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -12,10 +11,10 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderDetail implements Persistable<UUID> {
+public class OrderDetail {
 
     @Id
-    @Column(name = "id", updatable = false, nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -35,18 +34,5 @@ public class OrderDetail implements Persistable<UUID> {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal subtotal;
 
-    @Transient
-    private boolean isNew = true;
-
-    @PrePersist
-    @PostLoad
-    protected void markNotNew() {
-        this.isNew = false;
-    }
-
-    @Override
-    public boolean isNew() {
-        return this.isNew || id == null;
-    }
 }
 

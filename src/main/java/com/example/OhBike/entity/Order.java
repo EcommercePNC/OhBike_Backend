@@ -2,7 +2,6 @@ package com.example.OhBike.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.domain.Persistable; // <-- Importación clave
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,11 +13,12 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Order implements Persistable<UUID> {
+public class Order {
 
     @Id
-    @Column(name = "id", updatable = false, nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -56,17 +56,4 @@ public class Order implements Persistable<UUID> {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderDetail> details;
 
-    @Transient // Indica a JPA que esto no va a la base de datos
-    private boolean isNew = true;
-
-    @PrePersist
-    @PostLoad
-    protected void markNotNew() {
-        this.isNew = false;
-    }
-
-    @Override
-    public boolean isNew() {
-        return this.isNew || id == null;
-    }
 }

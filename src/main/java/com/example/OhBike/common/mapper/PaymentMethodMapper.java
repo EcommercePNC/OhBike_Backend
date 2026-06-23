@@ -10,8 +10,8 @@ public class PaymentMethodMapper {
 
     public PaymentMethod toEntity(PaymentMethodRequest request) {
         return PaymentMethod.builder()
-                .name(request.name())
-                .description(request.description())
+                .name(request.getName())
+                .description(request.getDescription())
                 .build();
     }
 

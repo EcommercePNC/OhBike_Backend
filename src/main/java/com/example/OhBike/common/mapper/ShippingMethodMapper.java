@@ -10,8 +10,8 @@ public class ShippingMethodMapper {
 
     public ShippingMethod toEntity(ShippingMethodRequest request) {
         return ShippingMethod.builder()
-                .name(request.name())
-                .baseCost(request.baseCost())
+                .name(request.getName())
+                .baseCost(request.getBaseCost())
                 .build();
     }
 
