@@ -1,4 +1,4 @@
-package com.example.OhBike.common.mapper;
+package com.example.OhBike.mapper;
 
 import com.example.OhBike.dto.request.RegisterRequest;
 import com.example.OhBike.dto.response.UserResponse;
