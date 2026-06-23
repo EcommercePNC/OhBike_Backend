@@ -1,6 +1,6 @@
 package com.example.OhBike.service.impl;
 
-import com.example.OhBike.common.mapper.ProductMapper;
+import com.example.OhBike.mapper.ProductMapper;
 import com.example.OhBike.dto.response.WishlistResponse;
 import com.example.OhBike.entity.Wishlist;
 import com.example.OhBike.exception.BusinessRuleException;

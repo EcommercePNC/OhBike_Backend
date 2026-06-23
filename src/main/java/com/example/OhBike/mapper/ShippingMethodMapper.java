@@ -2,7 +2,7 @@ package com.example.OhBike.mapper;
 
 import com.example.OhBike.dto.request.ShippingMethodRequest;
 import com.example.OhBike.dto.response.ShippingMethodResponse;
-import com.example.OhBike.entities.ShippingMethod;
+import com.example.OhBike.entity.ShippingMethod;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -27,7 +27,7 @@
 		<url/>
 	</scm>
 	<properties>
-		<java.version>21</java.version>
+		<java.version>25</java.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -165,8 +165,8 @@
 					</execution>
 				</executions>
                 <configuration>
-                    <source>24</source>
-                    <target>24</target>
+                    <source>25</source>
+                    <target>25</target>
                     <compilerArgs>--enable-preview</compilerArgs>
                 </configuration>
             </plugin>
