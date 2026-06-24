@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -27,6 +28,14 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(request.getRequestURI(), errors, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(DuplicateFieldException.class)
+    public ResponseEntity<ApiErrorResponse> handleDuplicateField(DuplicateFieldException ex, HttpServletRequest request) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put(ex.getField(), ex.getMessage());
+
+        return buildErrorResponse(request.getRequestURI(), errors, HttpStatus.CONFLICT);
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
         return buildErrorResponse(request.getRequestURI(), ex.getMessage(), HttpStatus.NOT_FOUND);
@@ -42,6 +51,32 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(request.getRequestURI(), "Data integrity violation. A unique constraint was breached.", HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiErrorResponse> handleBadCredentials(BadCredentialsException ex, HttpServletRequest request) {
+        return buildErrorResponse(
+                request.getRequestURI(),
+                "Invalid username or password.",
+                HttpStatus.UNAUTHORIZED
+        );
+    }
+
+   // JWT Auth filter handler
+    @ExceptionHandler(io.jsonwebtoken.ExpiredJwtException.class)
+    public ResponseEntity<ApiErrorResponse> handleExpiredJwt(io.jsonwebtoken.ExpiredJwtException ex, HttpServletRequest request) {
+        return buildErrorResponse(request.getRequestURI(), "The token has expired. Please log in again.", HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(io.jsonwebtoken.security.SignatureException.class)
+    public ResponseEntity<ApiErrorResponse> handleSignatureException(io.jsonwebtoken.security.SignatureException ex, HttpServletRequest request) {
+        return buildErrorResponse(request.getRequestURI(), "Invalid token signature.", HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(io.jsonwebtoken.MalformedJwtException.class)
+    public ResponseEntity<ApiErrorResponse> handleMalformedJwt(io.jsonwebtoken.MalformedJwtException ex, HttpServletRequest request) {
+        return buildErrorResponse(request.getRequestURI(), "Token with invalid format.", HttpStatus.BAD_REQUEST);
+    }
+
+    //quitar luego de pruebas ex.message()
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleGeneral(Exception ex, HttpServletRequest request) {
         return buildErrorResponse(request.getRequestURI(), "Internal server error: " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -50,7 +85,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
         assert ex.getRequiredType() != null;
-        String message = String.format("El parámetro '%s' tiene un valor '%s' inválido. Se esperaba el tipo %s.",
+        String message = String.format("The parameter '%s' has an invalid value '%s'. Expected type: %s.",
                 ex.getName(), ex.getValue(), ex.getRequiredType().getSimpleName());
 
         return buildErrorResponse(request.getRequestURI(), message, HttpStatus.BAD_REQUEST);

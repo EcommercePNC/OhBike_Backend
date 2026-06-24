@@ -1,6 +1,6 @@
 package com.example.OhBike.service.impl;
 
-import com.example.OhBike.common.mapper.ProductMapper;
+import com.example.OhBike.mapper.ProductMapper;
 import com.example.OhBike.dto.response.WishlistResponse;
 import com.example.OhBike.entity.Wishlist;
 import com.example.OhBike.exception.BusinessRuleException;
@@ -28,7 +28,7 @@ public class WishlistServiceImpl implements WishlistService {
     @Override
     public List<WishlistResponse> getWishlistByUser(UUID userId) {
         if (!userRepository.existsById(userId)) {
-            throw new ResourceNotFoundException("Usuario no ha sido encontrado con ID: " + userId);
+            throw new ResourceNotFoundException("User not found with ID: " + userId);
         }
 
         return wishlistRepository.findByUser_Id(userId)
@@ -45,14 +45,14 @@ public class WishlistServiceImpl implements WishlistService {
     @Transactional
     public void addProductToWishlist(UUID userId, UUID productId) {
         if (wishlistRepository.existsByUser_IdAndProduct_Id(userId, productId)) {
-            throw new BusinessRuleException("El producto ya existe en la whislist");
+            throw new BusinessRuleException("Product already exists in the wishlist");
         }
 
         var user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no ha sido encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         var product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Producto no ha sido encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         Wishlist wishlist = Wishlist.builder()
                 .user(user)
@@ -66,7 +66,7 @@ public class WishlistServiceImpl implements WishlistService {
     @Transactional
     public void removeProductFromWishlist(UUID userId, UUID productId) {
         if (!wishlistRepository.existsByUser_IdAndProduct_Id(userId, productId)) {
-            throw new ResourceNotFoundException("No se encontró el producto en la wishlist del usuario");
+            throw new ResourceNotFoundException("Product not found in the user's wishlist");
         }
 
         wishlistRepository.deleteByUser_IdAndProduct_Id(userId, productId);

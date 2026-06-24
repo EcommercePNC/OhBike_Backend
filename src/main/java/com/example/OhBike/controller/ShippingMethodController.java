@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
+import com.example.OhBike.entity.ShippingMethod;
+
 
 @RestController
 @RequestMapping("/api/v1/shipping-methods")

@@ -1,19 +1,20 @@
 package com.example.OhBike.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Builder
 public class OrderDetailResponse {
 
-    private UUID id;
-    private UUID productVariantId;
+    private UUID orderDetailId;
+    private UUID variantId;
     private String productName;
+    private String size;
+    private String color;
+    private String sku;
     private Integer quantity;
     private BigDecimal unitPrice;
     private BigDecimal subtotal;

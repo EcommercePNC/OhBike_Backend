@@ -32,7 +32,7 @@ public class Discount {
     private DiscountType discountType;
 
     @Column(nullable = false, name = "value")
-    @Min(value = 0, message = "Debe ser mayor a 0")
+    @Min(value = 0, message = "Must be greater than or equal to 0")
     private BigDecimal value;
 
     @Column(nullable = false)

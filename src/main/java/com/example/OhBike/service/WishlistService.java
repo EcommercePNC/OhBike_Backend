@@ -1,5 +1,6 @@
 package com.example.OhBike.service;
 
+import com.example.OhBike.mapper.ProductMapper;
 import com.example.OhBike.dto.response.WishlistResponse;
 
 import java.util.List;

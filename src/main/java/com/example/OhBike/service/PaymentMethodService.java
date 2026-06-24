@@ -3,7 +3,7 @@ package com.example.OhBike.service;
 import com.example.OhBike.dto.response.GeneralResponse;
 import com.example.OhBike.dto.request.PaymentMethodRequest;
 import com.example.OhBike.dto.response.PaymentMethodResponse;
-import com.example.OhBike.common.mapper.PaymentMethodMapper;
+import com.example.OhBike.mapper.PaymentMethodMapper;
 import com.example.OhBike.entity.PaymentMethod;
 import com.example.OhBike.repository.PaymentMethodRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,7 @@ public class PaymentMethodService {
 
         return GeneralResponse.builder()
                 .uri("/api/v1/payment-methods")
-                .message("Payment method successfully registered")
+                .message("Método de pago registrado exitosamente")
                 .status(201)
                 .time(LocalDateTime.now())
                 .data(paymentMethodMapper.toDto(saved))
@@ -42,7 +42,7 @@ public class PaymentMethodService {
 
         return GeneralResponse.builder()
                 .uri("/api/v1/payment-methods")
-                .message("Payment methods successfully recovered")
+                .message("Métodos de pago recuperados exitosamente")
                 .status(200)
                 .time(LocalDateTime.now())
                 .data(list)
@@ -51,11 +51,11 @@ public class PaymentMethodService {
 
     public GeneralResponse getById(UUID id) {
         PaymentMethod entity = paymentMethodRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Payment method not found with ID: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Método de pago no encontrado con el ID: " + id));
 
         return GeneralResponse.builder()
                 .uri("/api/v1/payment-methods/" + id)
-                .message("Payment method found")
+                .message("Método de pago encontrado")
                 .status(200)
                 .time(LocalDateTime.now())
                 .data(paymentMethodMapper.toDto(entity))
@@ -64,7 +64,7 @@ public class PaymentMethodService {
 
     public GeneralResponse update(UUID id, PaymentMethodRequest request) {
         PaymentMethod entity = paymentMethodRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Payment method not found with ID: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Método de pago no encontrado con el ID: " + id));
 
         entity.setName(request.getName());
         entity.setDescription(request.getDescription());
@@ -72,7 +72,7 @@ public class PaymentMethodService {
 
         return GeneralResponse.builder()
                 .uri("/api/v1/payment-methods/" + id)
-                .message("Payment method successfully updated")
+                .message("Método de pago actualizado exitosamente")
                 .status(200)
                 .time(LocalDateTime.now())
                 .data(paymentMethodMapper.toDto(updated))
@@ -81,12 +81,12 @@ public class PaymentMethodService {
 
     public GeneralResponse delete(UUID id) {
         PaymentMethod entity = paymentMethodRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Payment method not found with ID: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Método de pago no encontrado con el ID: " + id));
         paymentMethodRepository.delete(entity);
 
         return GeneralResponse.builder()
                 .uri("/api/v1/payment-methods/" + id)
-                .message("Payment method successfully removed")
+                .message("Método de pago eliminado exitosamente")
                 .status(200)
                 .time(LocalDateTime.now())
                 .data(null)

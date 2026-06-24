@@ -1,6 +1,6 @@
 package com.example.OhBike.service.impl;
 
-import com.example.OhBike.common.mapper.ProductCategoryMapper;
+import com.example.OhBike.mapper.ProductCategoryMapper;
 import com.example.OhBike.dto.request.ProductCategoryRequest;
 import com.example.OhBike.dto.request.UpdateProductCategoryRequest;
 import com.example.OhBike.dto.response.ProductCategoryResponse;
