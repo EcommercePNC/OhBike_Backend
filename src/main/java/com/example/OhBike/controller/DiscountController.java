@@ -21,29 +21,29 @@ public class DiscountController {
 
     @PostMapping
     public ResponseEntity<GeneralResponse> create(@Valid @RequestBody DiscountRequest request) {
-        return buildResponse("Descuento creado", HttpStatus.CREATED, discountService.createDiscount(request));
+        return buildResponse("Discount created successfully", HttpStatus.CREATED, discountService.createDiscount(request));
     }
 
     @GetMapping("/active")
     public ResponseEntity<GeneralResponse> findAllActive() {
-        return buildResponse("Descuentos activos encontrados", HttpStatus.OK, discountService.findAllActiveDiscount());
+        return buildResponse("Active discounts retrieved successfully", HttpStatus.OK, discountService.findAllActiveDiscount());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<GeneralResponse> getById(@PathVariable UUID id) {
-        return buildResponse("Descuento encontrado", HttpStatus.OK, discountService.getByIdDiscount(id));
+        return buildResponse("Discount found successfully", HttpStatus.OK, discountService.getByIdDiscount(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<GeneralResponse> update(@PathVariable UUID id, @Valid @RequestBody DiscountRequest request) {
-        return buildResponse("Descuento se ha actualizado exitosamente", HttpStatus.OK, discountService.updateDiscount(id, request));
+        return buildResponse("Discount updated successfully", HttpStatus.OK, discountService.updateDiscount(id, request));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<GeneralResponse> delete(@PathVariable UUID id) {
         discountService.deleteDiscount(id);
         return ResponseEntity.ok(GeneralResponse.builder()
-                .message("Descuento eliminado exitosamente.")
+                .message("Discount deleted successfully")
                 .status(HttpStatus.OK.value())
                 .time(LocalDateTime.now())
                 .build());
@@ -51,7 +51,7 @@ public class DiscountController {
 
     @GetMapping
     public ResponseEntity<GeneralResponse> getAllActiveDiscounts() {
-        return buildResponse("Lista de descuentos activos", HttpStatus.OK, discountService.findAllActiveDiscount());
+        return buildResponse("List of active discounts", HttpStatus.OK, discountService.findAllActiveDiscount());
     }
 
     private ResponseEntity<GeneralResponse> buildResponse(String message, HttpStatus status, Object data) {

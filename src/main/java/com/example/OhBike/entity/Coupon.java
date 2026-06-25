@@ -26,11 +26,11 @@ public class Coupon {
     private String code;
 
     @Column(nullable = false)
-    @Min(value = 0, message = "Debe ser mayor a 0")
+    @Min(value = 0, message = "Must be greater than 0")
     private Integer maxUses;
 
     @Column(nullable = false)
-    @Min(value = 0, message = "Debe ser mayor a 0")
+    @Min(value = 0, message = "Must be greater than 0")
     private Integer usedCount;
 
     @Column(nullable = false)

@@ -33,16 +33,16 @@ public class CouponServiceImpl implements CouponService {
     @Transactional
     public CouponResponse createCoupon(CouponRequest request) {
         if (couponRepository.existsByCode(request.getCode())) {
-            throw new BusinessRuleException("El código de cupón ya existe: " + request.getCode());
+            throw new BusinessRuleException("Coupon code already exists: " + request.getCode());
         }
         if (request.getExpirationDate().isBefore(LocalDate.now())) {
-            throw new BusinessRuleException("La fecha de expiración no puede ser una fecha pasada");
+            throw new BusinessRuleException("Expiration date cannot be a past date");
         }
         Discount discount = discountRepository.findById(request.getDiscountId())
-                .orElseThrow(() -> new ResourceNotFoundException("Descuento no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Discount not found"));
 
         if (!discount.getActive()) {
-            throw new BusinessRuleException("No puedes crear un cupón para un descuento inactivo");
+            throw new BusinessRuleException("Cannot create a coupon for an inactive discount");
         }
 
         Coupon coupon = couponMapper.toEntityCreate(request, discount);
@@ -57,11 +57,12 @@ public class CouponServiceImpl implements CouponService {
                 .map(couponMapper::toDto)
                 .collect(Collectors.toList());
     }
+
     @Override
     @Transactional(readOnly = true)
     public CouponResponse getByIdCoupon(UUID id) {
         Coupon coupon = couponRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Cupón no encontrado con ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Coupon not found with ID: " + id));
         return couponMapper.toDto(coupon);
     }
 
@@ -69,11 +70,11 @@ public class CouponServiceImpl implements CouponService {
     @Transactional
     public CouponResponse updateCoupon(CouponRequest request, UUID id) {
         Coupon existingCoupon = couponRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Cupón no encontrado con ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Coupon not found with ID: " + id));
 
         if (!existingCoupon.getCode().equalsIgnoreCase(request.getCode()) &&
                 couponRepository.existsByCode(request.getCode())) {
-            throw new BusinessRuleException("El código de cupón ya se encuentra en uso: " + request.getCode());
+            throw new BusinessRuleException("Coupon code is already in use: " + request.getCode());
         }
 
         Coupon couponToUpdate = couponMapper.toEntityUpdate(request, existingCoupon);
@@ -84,10 +85,10 @@ public class CouponServiceImpl implements CouponService {
     @Transactional
     public CouponResponse deleteCoupon(UUID id) {
         Coupon coupon = couponRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Cupón no encontrado con ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Coupon not found with ID: " + id));
 
         if (coupon.getUsedCount() > 0) {
-            throw new BusinessRuleException("No se puede eliminar un cupón que ya ha sido utilizado.");
+            throw new BusinessRuleException("Cannot delete a coupon that has already been used");
         }
 
         CouponResponse response = couponMapper.toDto(coupon);
@@ -99,20 +100,20 @@ public class CouponServiceImpl implements CouponService {
     @Transactional(readOnly = true)
     public ValidationResponse validateCoupon(String code, Double purchaseAmount) {
         Coupon coupon = couponRepository.findByCode(code)
-                .orElseThrow(() -> new ResourceNotFoundException("Cupón no encontrado con código: " + code));
+                .orElseThrow(() -> new ResourceNotFoundException("Coupon not found with code: " + code));
 
         if (coupon.getExpirationDate().isBefore(LocalDate.now())) {
-            throw new BusinessRuleException("El cupón ha expirado");
+            throw new BusinessRuleException("Coupon has expired");
         }
 
         if (coupon.getUsedCount() >= coupon.getMaxUses()) {
-            throw new BusinessRuleException("Cupón esta agotado");
+            throw new BusinessRuleException("Coupon is sold out");
         }
 
         return ValidationResponse.builder()
                 .code(coupon.getCode())
                 .isValid(true)
-                .message("Cupón válido")
+                .message("Coupon is valid")
                 .discountValue(coupon.getDiscount().getValue().doubleValue())
                 .discountType(coupon.getDiscount().getDiscountType().name())
                 .build();
@@ -122,10 +123,10 @@ public class CouponServiceImpl implements CouponService {
     @Transactional
     public CouponResponse redeemCoupon(String code) {
         Coupon coupon = couponRepository.findByCode(code)
-                .orElseThrow(() -> new ResourceNotFoundException("Cupón no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Coupon not found"));
 
         if (coupon.getUsedCount() >= coupon.getMaxUses()) {
-            throw new BusinessRuleException("Cupón agotado");
+            throw new BusinessRuleException("Coupon is sold out");
         }
 
         coupon.setUsedCount(coupon.getUsedCount() + 1);
@@ -136,7 +137,7 @@ public class CouponServiceImpl implements CouponService {
     @Transactional
     public CouponResponse cancelCoupon(String code) {
         Coupon coupon = couponRepository.findByCode(code)
-                .orElseThrow(() -> new ResourceNotFoundException("Cupón no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Coupon not found"));
 
         if (coupon.getUsedCount() > 0) {
             coupon.setUsedCount(coupon.getUsedCount() - 1);
@@ -150,16 +151,14 @@ public class CouponServiceImpl implements CouponService {
         BigDecimal discountValue = BigDecimal.valueOf(discount.getValue().doubleValue());
 
         return switch (discount.getDiscountType()) {
-            case PERCENTAGE -> {
-                BigDecimal percentage = discountValue.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-                yield originalPrice.subtract(originalPrice.multiply(percentage));
-            }
-            case FIXED_AMOUNT -> {
-                yield originalPrice.subtract(discountValue);
-            }
-            case NONE -> {
-                yield originalPrice;
-            }
+            case PERCENTAGE -> calculatePercentage(originalPrice, discountValue);
+            case FIXED_AMOUNT -> originalPrice.subtract(discountValue);
+            case NONE -> originalPrice;
         };
+    }
+
+    private BigDecimal calculatePercentage(BigDecimal price, BigDecimal percentage) {
+        BigDecimal factor = percentage.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        return price.subtract(price.multiply(factor));
     }
 }
