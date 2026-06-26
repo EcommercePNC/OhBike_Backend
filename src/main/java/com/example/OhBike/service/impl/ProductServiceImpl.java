@@ -50,6 +50,31 @@ public class ProductServiceImpl implements ProductService{
     }
 
     @Override
+    @Transactional
+    public ProductResponse createProductAsAdmin(ProductRequest request)
+    {
+        if(request.getSellerId() == null){
+            throw new BusinessRuleException("Seller id is required");
+        }
+
+        User seller = userRepository.findById(request.getSellerId())
+                .orElseThrow(() -> new ResourceNotFoundException("Seller not found with id: " + request.getSellerId()));
+
+        if(!seller.getRole().getName().equals("SELLER")){
+        throw new BusinessRuleException("User must be a seller");
+    }
+
+        ProductCategory category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: "));
+
+        Product product = productMapper.toEntityCreate(request, category);
+        product.setSeller(seller);
+
+        Product savedProduct = productRepository.save(product);
+        return productMapper.toDto(savedProduct);
+    }
+
+    @Override
     public List<ProductResponse> getAllProducts(UUID categoryId) {
         List<Product> products;
         if (categoryId != null) {
@@ -125,4 +150,6 @@ public class ProductServiceImpl implements ProductService{
 
         return response;
     }
+
+
 }

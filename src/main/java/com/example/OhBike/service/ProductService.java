@@ -13,4 +13,6 @@ public interface ProductService {
     ProductResponse getProductById(UUID id);
     ProductResponse updateProduct(UpdateProductRequest request, UUID id, String sellerEmail);
     ProductResponse deleteProduct(UUID id, String sellerEmail);
+
+    ProductResponse createProductAsAdmin(ProductRequest request);
 }
