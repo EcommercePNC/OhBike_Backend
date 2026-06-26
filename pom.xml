@@ -164,11 +164,10 @@
 						</configuration>
 					</execution>
 				</executions>
-                <configuration>
-                    <source>25</source>
-                    <target>25</target>
-                    <compilerArgs>--enable-preview</compilerArgs>
-                </configuration>
+				<configuration>
+					<source>21</source>
+					<target>21</target>
+				</configuration>
             </plugin>
 		</plugins>
 	</build>
