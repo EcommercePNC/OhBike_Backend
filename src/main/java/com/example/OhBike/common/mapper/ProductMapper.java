@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ProductMapper {
+public class    ProductMapper {
     private final ProductCategoryMapper categoryMapper;
 
     public Product toEntityCreate(ProductRequest request, ProductCategory category) {
@@ -39,14 +39,15 @@ public class ProductMapper {
     }
 
     public ProductResponse toDto(Product product) {
-        return ProductResponse.builder()
-                .id(product.getId())
-                .name(product.getName())
-                .description(product.getDescription())
-                .basePrice(product.getBasePrice())
-                .available(product.getAvailable())
-                .category(categoryMapper.toDto(product.getProductCategory()))
-                .build();
-    }
-
-}
+        if (product == null) {return null;}
+            return ProductResponse.builder()
+                    .id(product.getId())
+                    .name(product.getName())
+                    .description(product.getDescription())
+                    .basePrice(product.getBasePrice())
+                    .available(product.getAvailable())
+                    .category(categoryMapper.toDto(product.getProductCategory()))
+                    .sellerId(product.getSeller().getId())
+                    .sellerName(product.getSeller().getName())
+                    .build();
+}}

@@ -6,10 +6,13 @@ import com.example.OhBike.dto.request.UpdateProductRequest;
 import com.example.OhBike.dto.response.ProductResponse;
 import com.example.OhBike.entity.Product;
 import com.example.OhBike.entity.ProductCategory;
+import com.example.OhBike.entity.User;
 import com.example.OhBike.exception.BusinessRuleException;
 import com.example.OhBike.exception.ResourceNotFoundException;
+import com.example.OhBike.exception.UnauthorizedOperationException;
 import com.example.OhBike.repository.ProductCategoryRepository;
 import com.example.OhBike.repository.ProductRepository;
+import com.example.OhBike.repository.UserRepository;
 import com.example.OhBike.service.ProductService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,23 +26,29 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService{
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
     private final ProductCategoryRepository categoryRepository;
     private final ProductMapper productMapper;
 
     @Override
     @Transactional
-    public ProductResponse createProduct(ProductRequest request) {
+    public ProductResponse createProduct(ProductRequest request, String sellerEmail) {
+        User seller = userRepository.findByEmail(sellerEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Seller not found with email"));
+
         if (productRepository.existsByNameIgnoreCase(request.getName())) {
             throw new BusinessRuleException("Product name already exists");
         }
         ProductCategory category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + request.getCategoryId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: "));
 
         Product product = productMapper.toEntityCreate(request, category);
-        Product savedProduct = productRepository.save(product);
+        product.setSeller(seller);
 
+        Product savedProduct = productRepository.save(product);
         return productMapper.toDto(savedProduct);
     }
+
     @Override
     public List<ProductResponse> getAllProducts(UUID categoryId) {
         List<Product> products;
@@ -72,7 +81,7 @@ public class ProductServiceImpl implements ProductService{
 
     @Override
     @Transactional
-    public ProductResponse updateProduct(UpdateProductRequest request, UUID id) {
+    public ProductResponse updateProduct(UpdateProductRequest request, UUID id, String sellerEmail) {
         if (request.getName() == null &&
                 request.getDescription() == null &&
                 request.getBasePrice() == null &&
@@ -82,6 +91,10 @@ public class ProductServiceImpl implements ProductService{
 
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        if (!existingProduct.getSeller().getEmail().equals(sellerEmail)) {
+            throw new UnauthorizedOperationException(" You do not have permission to update this product because you are not the owner.");
+        }
         if (request.getName() != null && !request.getName().isBlank() &&
                 !existingProduct.getName().equalsIgnoreCase(request.getName())) {
             if (productRepository.existsByNameIgnoreCase(request.getName())) {
@@ -99,9 +112,13 @@ public class ProductServiceImpl implements ProductService{
 
     @Override
     @Transactional
-    public ProductResponse deleteProduct(UUID id) {
+    public ProductResponse deleteProduct(UUID id, String sellerEmail) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        if (!product.getSeller().getEmail().equals(sellerEmail)) {
+            throw new UnauthorizedOperationException(" You do not have permission to delete this product because you are not the owner.");
+        }
 
         ProductResponse response = productMapper.toDto(product);
         productRepository.deleteById(id);
