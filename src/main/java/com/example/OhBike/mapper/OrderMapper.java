@@ -33,6 +33,7 @@ public class OrderMapper {
                 .orderId(order.getId())
                 .userId(order.getUser().getId())
                 .userName(order.getUser().getName())
+                .paymentMethod(order.getPaymentMethod().getName())
                 .shippingMethod(order.getShippingMethod().getName())
                 .shippingCost(order.getShippingCost())
                 .couponCode(order.getCoupon() != null ? order.getCoupon().getCode() : null)

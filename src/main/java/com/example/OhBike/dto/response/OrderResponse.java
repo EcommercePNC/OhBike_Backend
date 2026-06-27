@@ -15,6 +15,7 @@ public class OrderResponse {
     private UUID orderId;
     private UUID userId;
     private String userName;
+    private String paymentMethod;
     private String shippingMethod;
     private BigDecimal shippingCost;
     private String couponCode;
