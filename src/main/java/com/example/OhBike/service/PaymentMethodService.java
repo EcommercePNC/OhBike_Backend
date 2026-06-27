@@ -4,7 +4,7 @@ import com.example.OhBike.dto.response.GeneralResponse;
 import com.example.OhBike.dto.request.PaymentMethodRequest;
 import com.example.OhBike.dto.response.PaymentMethodResponse;
 import com.example.OhBike.mapper.PaymentMethodMapper;
-import com.example.OhBike.entities.PaymentMethod;
+import com.example.OhBike.entity.PaymentMethod;
 import com.example.OhBike.repository.PaymentMethodRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -66,8 +66,8 @@ public class PaymentMethodService {
         PaymentMethod entity = paymentMethodRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Método de pago no encontrado con el ID: " + id));
 
-        entity.setName(request.name());
-        entity.setDescription(request.description());
+        entity.setName(request.getName());
+        entity.setDescription(request.getDescription());
         PaymentMethod updated = paymentMethodRepository.save(entity);
 
         return GeneralResponse.builder()

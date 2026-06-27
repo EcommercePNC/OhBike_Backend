@@ -1,12 +1,10 @@
 package com.example.OhBike.entity;
 
 import jakarta.persistence.*;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -35,5 +33,4 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private ProductCategory productCategory;
-
 }
