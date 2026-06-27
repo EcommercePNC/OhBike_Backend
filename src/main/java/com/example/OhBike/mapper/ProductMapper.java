@@ -2,6 +2,7 @@ package com.example.OhBike.mapper;
 
 import com.example.OhBike.dto.request.ProductRequest;
 import com.example.OhBike.dto.request.UpdateProductRequest;
+import com.example.OhBike.dto.response.ProductPublicResponse;
 import com.example.OhBike.dto.response.ProductResponse;
 import com.example.OhBike.entity.Product;
 import com.example.OhBike.entity.ProductCategory;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ProductMapper {
+public class    ProductMapper {
     private final ProductCategoryMapper categoryMapper;
 
     public Product toEntityCreate(ProductRequest request, ProductCategory category) {
@@ -39,14 +40,29 @@ public class ProductMapper {
     }
 
     public ProductResponse toDto(Product product) {
-        return ProductResponse.builder()
+        if (product == null) {return null;}
+            return ProductResponse.builder()
+                    .id(product.getId())
+                    .name(product.getName())
+                    .description(product.getDescription())
+                    .basePrice(product.getBasePrice())
+                    .available(product.getAvailable())
+                    .category(categoryMapper.toDto(product.getProductCategory()))
+                    .sellerId(product.getSeller().getId())
+                    .sellerName(product.getSeller().getName())
+                    .build();
+}
+    public ProductPublicResponse toPublicDto(Product product) {
+        if (product == null) {
+            return null;
+        }
+        return ProductPublicResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
                 .description(product.getDescription())
                 .basePrice(product.getBasePrice())
                 .available(product.getAvailable())
-                .category(categoryMapper.toDto(product.getProductCategory()))
+                .categoryName(product.getProductCategory() != null ? product.getProductCategory().getName() : null)
                 .build();
     }
-
 }

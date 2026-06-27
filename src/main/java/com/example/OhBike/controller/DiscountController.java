@@ -19,27 +19,27 @@ import java.util.UUID;
 public class DiscountController {
     private final DiscountService discountService;
 
-    @PostMapping
+    @PostMapping // Admin only
     public ResponseEntity<GeneralResponse> create(@Valid @RequestBody DiscountRequest request) {
         return buildResponse("Discount created successfully", HttpStatus.CREATED, discountService.createDiscount(request));
     }
 
-    @GetMapping("/active")
+    @GetMapping("/active") // Admin, Seller, Client
     public ResponseEntity<GeneralResponse> findAllActive() {
         return buildResponse("Active discounts retrieved successfully", HttpStatus.OK, discountService.findAllActiveDiscount());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id}") // Admin, Seller
     public ResponseEntity<GeneralResponse> getById(@PathVariable UUID id) {
         return buildResponse("Discount found successfully", HttpStatus.OK, discountService.getByIdDiscount(id));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id}") // Admin only
     public ResponseEntity<GeneralResponse> update(@PathVariable UUID id, @Valid @RequestBody DiscountRequest request) {
         return buildResponse("Discount updated successfully", HttpStatus.OK, discountService.updateDiscount(id, request));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id}") // Admin only
     public ResponseEntity<GeneralResponse> delete(@PathVariable UUID id) {
         discountService.deleteDiscount(id);
         return ResponseEntity.ok(GeneralResponse.builder()
@@ -49,7 +49,7 @@ public class DiscountController {
                 .build());
     }
 
-    @GetMapping
+    @GetMapping // Admin, Seller, Client
     public ResponseEntity<GeneralResponse> getAllActiveDiscounts() {
         return buildResponse("List of active discounts", HttpStatus.OK, discountService.findAllActiveDiscount());
     }

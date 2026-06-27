@@ -28,7 +28,7 @@ public class ShippingMethodService {
 
         return GeneralResponse.builder()
                 .uri("/api/v1/shipping-methods")
-                .message("Método de envío registrado exitosamente")
+                .message("Shipping method created successfully")
                 .status(201)
                 .time(LocalDateTime.now())
                 .data(shippingMethodMapper.toDto(saved))
@@ -42,7 +42,7 @@ public class ShippingMethodService {
 
         return GeneralResponse.builder()
                 .uri("/api/v1/shipping-methods")
-                .message("Métodos de envío recuperados exitosamente")
+                .message("Shipping methods retrieved successfully")
                 .status(200)
                 .time(LocalDateTime.now())
                 .data(list)
@@ -51,11 +51,11 @@ public class ShippingMethodService {
 
     public GeneralResponse getById(UUID id) {
         ShippingMethod entity = shippingMethodRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Método de envío no encontrado con el ID: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Shipping method not found with ID: " + id));
 
         return GeneralResponse.builder()
                 .uri("/api/v1/shipping-methods/" + id)
-                .message("Método de envío encontrado")
+                .message("Shipping method found")
                 .status(200)
                 .time(LocalDateTime.now())
                 .data(shippingMethodMapper.toDto(entity))
@@ -64,7 +64,7 @@ public class ShippingMethodService {
 
     public GeneralResponse update(UUID id, ShippingMethodRequest request) {
         ShippingMethod entity = shippingMethodRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Método de envío no encontrado con el ID: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Shipping method not found with ID: " + id));
 
         entity.setName(request.getName());
         entity.setBaseCost(request.getBaseCost());
@@ -72,7 +72,7 @@ public class ShippingMethodService {
 
         return GeneralResponse.builder()
                 .uri("/api/v1/shipping-methods/" + id)
-                .message("Método de envío actualizado exitosamente")
+                .message("Shipping method updated successfully")
                 .status(200)
                 .time(LocalDateTime.now())
                 .data(shippingMethodMapper.toDto(updated))
@@ -81,12 +81,12 @@ public class ShippingMethodService {
 
     public GeneralResponse delete(UUID id) {
         ShippingMethod entity = shippingMethodRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Método de envío no encontrado con el ID: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Shipping method not found with ID: " + id));
         shippingMethodRepository.delete(entity);
 
         return GeneralResponse.builder()
                 .uri("/api/v1/shipping-methods/" + id)
-                .message("Método de envío eliminado exitosamente")
+                .message("Shipping method deleted successfully")
                 .status(200)
                 .time(LocalDateTime.now())
                 .data(null)

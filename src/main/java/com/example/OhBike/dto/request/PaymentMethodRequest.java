@@ -18,3 +18,4 @@ public class PaymentMethodRequest {
         @Size(max = 255, message = "The description should not exceed 255 characters")
         private String description;
 }
+

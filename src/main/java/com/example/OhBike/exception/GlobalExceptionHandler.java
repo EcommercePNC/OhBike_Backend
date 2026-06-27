@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -37,6 +39,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleNotFound(
             ResourceNotFoundException ex, HttpServletRequest req) {
         return build(req, HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", ex.getMessage());
+    }
+
+    @ExceptionHandler(UnauthorizedOperationException.class)
+    public ResponseEntity<ApiErrorResponse> handleNotFound(UnauthorizedOperationException ex, HttpServletRequest request) {
+        return buildErrorResponse(request.getRequestURI(), ex.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(BusinessRuleException.class)
@@ -73,6 +80,29 @@ public class GlobalExceptionHandler {
                 "You do not have permission to perform this action.");
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiErrorResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpServletRequest request)
+     {
+        String message = ex.getMessage() != null && ex.getMessage().contains("Required request body is missing")
+                ? "Request body is required."
+                : "Request body is malformed.";
+
+        return buildErrorResponse(request.getRequestURI(), message, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiErrorResponse> handleAccessDenied(
+            AccessDeniedException ex,
+            HttpServletRequest request
+    ) {
+        return buildErrorResponse(
+                request.getRequestURI(),
+                "You do not have permission to perform this action.",
+                HttpStatus.FORBIDDEN
+        );
+    }
+
+   // JWT Auth filter handler
     @ExceptionHandler(io.jsonwebtoken.ExpiredJwtException.class)
     public ResponseEntity<ErrorResponse> handleExpiredJwt(
             io.jsonwebtoken.ExpiredJwtException ex, HttpServletRequest req) {

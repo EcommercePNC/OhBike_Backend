@@ -11,6 +11,9 @@ import java.util.UUID;
 @AllArgsConstructor
 public class CheckoutRequest {
 
+    @NotNull(message = "Payment method is required")
+    private UUID paymentMethodId;
+
     @NotNull(message = "Shipping method is required")
     private UUID shippingMethodId;
 
