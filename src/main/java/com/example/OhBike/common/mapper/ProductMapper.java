@@ -2,6 +2,7 @@ package com.example.OhBike.common.mapper;
 
 import com.example.OhBike.dto.request.ProductRequest;
 import com.example.OhBike.dto.request.UpdateProductRequest;
+import com.example.OhBike.dto.response.ProductPublicResponse;
 import com.example.OhBike.dto.response.ProductResponse;
 import com.example.OhBike.entity.Product;
 import com.example.OhBike.entity.ProductCategory;
@@ -50,4 +51,18 @@ public class    ProductMapper {
                     .sellerId(product.getSeller().getId())
                     .sellerName(product.getSeller().getName())
                     .build();
-}}
+}
+    public ProductPublicResponse toPublicDto(Product product) {
+        if (product == null) {
+            return null;
+        }
+        return ProductPublicResponse.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .description(product.getDescription())
+                .basePrice(product.getBasePrice())
+                .available(product.getAvailable())
+                .categoryName(product.getProductCategory() != null ? product.getProductCategory().getName() : null)
+                .build();
+    }
+}

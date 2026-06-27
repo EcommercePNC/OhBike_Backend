@@ -38,11 +38,22 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<GeneralResponse> getAllProducts(@RequestParam(required = false) UUID categoryId) {
+    public ResponseEntity<GeneralResponse> getAllPublicProducts(@RequestParam(required = false) UUID categoryId) {
         return buildResponse(
                 "Products found",
                 HttpStatus.OK,
-                productService.getAllProducts(categoryId)
+                productService.getAllPublicProducts(categoryId)
+        );
+    }
+
+    @GetMapping("/my-products")
+    @PreAuthorize("hasAuthority('SELLER')")
+    public ResponseEntity<GeneralResponse> getSellerProducts(Authentication authentication) {
+        String sellerEmail = authentication.getName();
+        return buildResponse(
+                "Seller products retrieved successfully",
+                HttpStatus.OK,
+                productService.getProductsBySellerEmail(sellerEmail)
         );
     }
 

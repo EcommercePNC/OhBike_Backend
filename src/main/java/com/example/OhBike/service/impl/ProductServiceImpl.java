@@ -3,6 +3,7 @@ package com.example.OhBike.service.impl;
 import com.example.OhBike.common.mapper.ProductMapper;
 import com.example.OhBike.dto.request.ProductRequest;
 import com.example.OhBike.dto.request.UpdateProductRequest;
+import com.example.OhBike.dto.response.ProductPublicResponse;
 import com.example.OhBike.dto.response.ProductResponse;
 import com.example.OhBike.entity.Product;
 import com.example.OhBike.entity.ProductCategory;
@@ -104,16 +105,33 @@ public class ProductServiceImpl implements ProductService{
     }
 
     @Override
-    public List<ProductResponse> getAllProducts(UUID categoryId) {
-        List<Product> products;
-        if (categoryId != null) {
-            if (!categoryRepository.existsById(categoryId)) {
-                throw new ResourceNotFoundException("Category not found with id: " + categoryId);
-            }
-            products = productRepository.findByProductCategoryId(categoryId);
-        } else {
-            products = productRepository.findAll();
+    @Transactional
+    public ProductResponse getProductById(UUID id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        return productMapper.toDto(product);
+    }
+
+    @Override
+    public List<ProductPublicResponse> getAllPublicProducts(UUID categoryId) {
+        List<Product> products = (categoryId != null)
+                ? productRepository.findByProductCategoryId(categoryId)
+                : productRepository.findAll();
+
+        if (products.isEmpty()) {
+            throw new ResourceNotFoundException("No registered products were found");
         }
+        return products.stream()
+                .map(productMapper::toPublicDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProductResponse> getAllProductsAsAdmin(UUID categoryId) {
+        List<Product> products = (categoryId != null)
+                ? productRepository.findByProductCategoryId(categoryId)
+                : productRepository.findAll();
 
         if (products.isEmpty()) {
             throw new ResourceNotFoundException("No registered products were found");
@@ -123,14 +141,37 @@ public class ProductServiceImpl implements ProductService{
                 .map(productMapper::toDto)
                 .collect(Collectors.toList());
     }
+    @Override
+    public List<ProductResponse> getProductsBySellerEmail(String sellerEmail) {
+        User seller = userRepository.findByEmail(sellerEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
+
+        List<Product> products = productRepository.findBySellerId(seller.getId());
+
+        if (products.isEmpty()) {
+            throw new ResourceNotFoundException("No registered products were found for this seller");
+        }
+        return products.stream()
+                .map(productMapper::toDto)
+                .collect(Collectors.toList());
+    }
 
     @Override
-    @Transactional
-    public ProductResponse getProductById(UUID id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+    public List<ProductResponse> getProductsBySellerId(UUID sellerId) {
 
-        return productMapper.toDto(product);
+        if (!userRepository.existsById(sellerId)) {
+            throw new ResourceNotFoundException("Seller not found with ID: " + sellerId);
+        }
+
+        List<Product> products = productRepository.findBySellerId(sellerId);
+
+        if (products.isEmpty()) {
+            throw new ResourceNotFoundException("No registered products were found for this seller");
+        }
+
+        return products.stream()
+                .map(productMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override
