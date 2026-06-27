@@ -3,6 +3,7 @@ package com.example.OhBike.service.impl;
 import com.example.OhBike.dto.request.CheckoutRequest;
 import com.example.OhBike.dto.response.CartItemResponse;
 import com.example.OhBike.dto.response.CheckoutSummaryResponse;
+import com.example.OhBike.dto.response.CheckoutValidationResponse;
 import com.example.OhBike.dto.response.OrderResponse;
 import com.example.OhBike.entity.*;
 import com.example.OhBike.entity.enums.OrderStatus;
@@ -11,8 +12,8 @@ import com.example.OhBike.exception.ResourceNotFoundException;
 import com.example.OhBike.mapper.CartMapper;
 import com.example.OhBike.mapper.OrderMapper;
 import com.example.OhBike.repository.*;
+import com.example.OhBike.service.CheckoutValidationService;
 import com.example.OhBike.service.OrderService;
-import com.example.OhBike.service.impl.CouponServiceImpl;
 import com.example.OhBike.util.AuthUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
-    private final CartItemRepository cartItemRepository;
+    private final PaymentMethodRepository paymentMethodRepository;
     private final ShippingMethodRepository shippingMethodRepository;
     private final CouponRepository couponRepository;
     private final ProductVariantRepository variantRepository;
@@ -36,13 +37,16 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final CartMapper cartMapper;
     private final CouponServiceImpl couponService;
+    private final CheckoutValidationService checkoutValidationService;
 
     @Override
     public CheckoutSummaryResponse previewCheckout(CheckoutRequest request) {
         Cart cart = getCartOfCurrentUser();
         validateCartNotEmpty(cart);
 
+        findPayment(request.getPaymentMethodId());
         ShippingMethod shipping = findShipping(request.getShippingMethodId());
+
         BigDecimal subtotal = calculateSubtotal(cart);
         BigDecimal discountAmount = BigDecimal.ZERO;
         String couponCode = null;
@@ -58,7 +62,9 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal total = subtotal.subtract(discountAmount).add(shippingCost);
 
         List<CartItemResponse> itemDtos = cart.getItems()
-                .stream().map(cartMapper::toItemDto).toList();
+                .stream()
+                .map(cartMapper::toItemDto)
+                .toList();
 
         return CheckoutSummaryResponse.builder()
                 .items(itemDtos)
@@ -74,14 +80,22 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponse checkout(CheckoutRequest request) {
+
+        CheckoutValidationResponse validation = checkoutValidationService.validate(request);
+        if (!validation.isValid()) {
+            String reasons = String.join(" | ", validation.getErrors());
+            throw new BusinessRuleException("CHECKOUT_INVALID",
+                    "Checkout failed validation: " + reasons);
+        }
+
         UUID userId = AuthUtil.getCurrentUserId();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Cart cart = getCartOfCurrentUser();
-        validateCartNotEmpty(cart);
-
+        PaymentMethod paymentMethod = findPayment(request.getPaymentMethodId());
         ShippingMethod shipping = findShipping(request.getShippingMethodId());
+
         BigDecimal subtotal = calculateSubtotal(cart);
         BigDecimal discountAmount = BigDecimal.ZERO;
         Coupon coupon = null;
@@ -98,6 +112,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = Order.builder()
                 .user(user)
                 .coupon(coupon)
+                .paymentMethod(paymentMethod)
                 .shippingMethod(shipping)
                 .status(OrderStatus.PENDING)
                 .subtotal(subtotal)
@@ -106,39 +121,29 @@ public class OrderServiceImpl implements OrderService {
                 .total(total)
                 .build();
 
-        List<OrderDetail> details = cart.getItems().stream().map(item -> {
-            ProductVariant variant = item.getVariant();
+        List<OrderDetail> details = cart.getItems().stream()
+                .map(item -> {
+                    ProductVariant variant = item.getVariant();
+                    variant.setStock(variant.getStock() - item.getQuantity());
+                    variantRepository.save(variant);
 
-            if (variant.getStock() < item.getQuantity()) {
-                throw new BusinessRuleException(
-                        "Insufficient stock for variant: " + variant.getSku() +
-                                ". Available: " + variant.getStock());
-            }
-
-            variant.setStock(variant.getStock() - item.getQuantity());
-            variantRepository.save(variant);
-
-            BigDecimal itemSubtotal = variant.getPrice()
-                    .multiply(BigDecimal.valueOf(item.getQuantity()));
-
-            return OrderDetail.builder()
-                    .order(order)
-                    .variant(variant)
-                    .quantity(item.getQuantity())
-                    .unitPrice(variant.getPrice())
-                    .subtotal(itemSubtotal)
-                    .build();
-        }).toList();
+                    return OrderDetail.builder()
+                            .order(order)
+                            .variant(variant)
+                            .quantity(item.getQuantity())
+                            .unitPrice(variant.getPrice())
+                            .subtotal(variant.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                            .build();
+                })
+                .toList();
 
         order.setDetails(details);
         Order saved = orderRepository.save(order);
 
-        // Redimir cupón si se usó
         if (coupon != null) {
             couponService.redeemCoupon(coupon.getCode());
         }
 
-        // Vaciar el carrito
         cart.getItems().clear();
         cartRepository.save(cart);
 
@@ -151,7 +156,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = findOrderOfCurrentUser(orderId);
 
         if (order.getStatus() != OrderStatus.PENDING) {
-            throw new BusinessRuleException(
+            throw new BusinessRuleException("ORDER_INVALID_STATUS",
                     "Order cannot be paid. Current status: " + order.getStatus());
         }
 
@@ -166,7 +171,7 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId));
 
         if (order.getStatus() != OrderStatus.PAID) {
-            throw new BusinessRuleException(
+            throw new BusinessRuleException("ORDER_INVALID_STATUS",
                     "Order cannot be shipped. Current status: " + order.getStatus());
         }
 
@@ -176,9 +181,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponse getById(UUID orderId) {
-        return orderMapper.toDto(
-                orderRepository.findById(orderId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId)));
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId));
+        return orderMapper.toDto(order);
     }
 
     @Override
@@ -194,6 +199,7 @@ public class OrderServiceImpl implements OrderService {
                 .stream().map(orderMapper::toDto).toList();
     }
 
+
     private Cart getCartOfCurrentUser() {
         UUID userId = AuthUtil.getCurrentUserId();
         return cartRepository.findByUser_Id(userId)
@@ -202,8 +208,13 @@ public class OrderServiceImpl implements OrderService {
 
     private void validateCartNotEmpty(Cart cart) {
         if (cart.getItems() == null || cart.getItems().isEmpty()) {
-            throw new BusinessRuleException("Cannot checkout with an empty cart");
+            throw new BusinessRuleException("CART_EMPTY", "Cannot checkout with an empty cart.");
         }
+    }
+
+    private PaymentMethod findPayment(UUID paymentMethodId) {
+        return paymentMethodRepository.findById(paymentMethodId)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment method not found: " + paymentMethodId));
     }
 
     private ShippingMethod findShipping(UUID shippingMethodId) {
@@ -216,11 +227,13 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Coupon not found: " + code));
 
         if (coupon.getExpirationDate().isBefore(java.time.LocalDate.now())) {
-            throw new BusinessRuleException("Coupon has expired: " + code);
+            throw new BusinessRuleException("COUPON_EXPIRED", "Coupon has expired: " + code);
         }
+
         if (coupon.getUsedCount() >= coupon.getMaxUses()) {
-            throw new BusinessRuleException("Coupon is sold out: " + code);
+            throw new BusinessRuleException("COUPON_EXHAUSTED", "Coupon has no remaining uses: " + code);
         }
+
         return coupon;
     }
 
@@ -235,8 +248,10 @@ public class OrderServiceImpl implements OrderService {
         UUID userId = AuthUtil.getCurrentUserId();
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId));
+
         if (!order.getUser().getId().equals(userId)) {
-            throw new BusinessRuleException("This order does not belong to the current user");
+            throw new BusinessRuleException("ACCESS_DENIED",
+                    "This order does not belong to the current user.");
         }
         return order;
     }
