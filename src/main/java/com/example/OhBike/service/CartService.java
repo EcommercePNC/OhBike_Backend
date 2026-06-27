@@ -2,6 +2,7 @@ package com.example.OhBike.service;
 
 import com.example.OhBike.dto.request.AddCartItemRequest;
 import com.example.OhBike.dto.request.UpdateCartItemRequest;
+import com.example.OhBike.dto.response.CartRefreshResponse;
 import com.example.OhBike.dto.response.CartResponse;
 import com.example.OhBike.dto.response.CartSummaryResponse;
 
@@ -15,4 +16,5 @@ public interface CartService {
     CartResponse removeItem(UUID cartItemId);                                // DELETE /cart/items/{id}
     CartResponse clearCart();                                                // DELETE /cart/items
     CartSummaryResponse getSummary();                                        // GET  /cart/summary
+    CartRefreshResponse refresh();                                           // POST /cart/refresh
 }

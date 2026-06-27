@@ -1,5 +1,6 @@
 package com.example.OhBike.exception;
 
+import com.example.OhBike.dto.response.ApiErrorResponse;
 import com.example.OhBike.dto.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
