@@ -67,6 +67,10 @@ public class ProductServiceImpl implements ProductService{
         ProductCategory category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: "));
 
+        if (productRepository.existsByNameIgnoreCase(request.getName())) {
+            throw new BusinessRuleException("Product name already exists");
+        }
+
         Product product = productMapper.toEntityCreate(request, category);
         product.setSeller(seller);
 
