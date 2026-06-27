@@ -41,6 +41,11 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(request.getRequestURI(), ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(UnauthorizedOperationException.class)
+    public ResponseEntity<ApiErrorResponse> handleNotFound(UnauthorizedOperationException ex, HttpServletRequest request) {
+        return buildErrorResponse(request.getRequestURI(), ex.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
+
     @ExceptionHandler(BusinessRuleException.class)
     public ResponseEntity<ApiErrorResponse> handleBusinessRule(BusinessRuleException ex, HttpServletRequest request) {
         return buildErrorResponse(request.getRequestURI(), ex.getMessage(), HttpStatus.CONFLICT);

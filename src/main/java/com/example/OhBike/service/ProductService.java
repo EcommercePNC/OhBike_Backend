@@ -8,9 +8,11 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ProductService {
-    ProductResponse createProduct(ProductRequest request);
+    ProductResponse createProduct(ProductRequest request, String sellerEmail );
     List<ProductResponse> getAllProducts(UUID categoryId);
     ProductResponse getProductById(UUID id);
-    ProductResponse updateProduct(UpdateProductRequest request, UUID id);
-    ProductResponse deleteProduct(UUID id);
+    ProductResponse updateProduct(UpdateProductRequest request, UUID id, String sellerEmail);
+    ProductResponse deleteProduct(UUID id, String sellerEmail);
+
+    ProductResponse createProductAsAdmin(ProductRequest request);
 }

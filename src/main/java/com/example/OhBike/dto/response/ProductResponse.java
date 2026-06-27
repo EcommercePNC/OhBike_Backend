@@ -15,4 +15,6 @@ public class ProductResponse {
     private BigDecimal basePrice;
     private Boolean available;
     private ProductCategoryResponse category;
+    private UUID sellerId;
+    private String sellerName;
 }
