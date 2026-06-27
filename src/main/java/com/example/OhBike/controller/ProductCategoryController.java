@@ -9,6 +9,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -24,11 +26,18 @@ public class ProductCategoryController {
     private final ProductCategoryService categoryService;
 
     @PostMapping
-    public ResponseEntity<GeneralResponse> createCategory(@Valid @RequestBody ProductCategoryRequest category){
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<GeneralResponse> createCategory(
+            @Valid @RequestBody
+            ProductCategoryRequest category,
+            Authentication authentication)
+    {
+        String userEmail = authentication.getName();
+
         return buildResponse(
                 "Category created succesfully",
                 HttpStatus.CREATED,
-                categoryService.createCategory(category)
+                categoryService.createCategory(category, userEmail)
         );
     }
 
@@ -50,21 +59,25 @@ public class ProductCategoryController {
         );
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<GeneralResponse> updateCategory(@Valid @RequestBody UpdateProductCategoryRequest category, @PathVariable UUID id){
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<GeneralResponse> updateCategory(@Valid @RequestBody UpdateProductCategoryRequest category, @PathVariable UUID id, Authentication authentication){
+        String userEmail = authentication.getName();
         return buildResponse(
                 "Category updated succesfully",
                 HttpStatus.OK,
-                categoryService.updateCategory(category, id)
+                categoryService.updateCategory(category, id, userEmail)
         );
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<GeneralResponse> deleteCategory(@PathVariable UUID id){
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<GeneralResponse> deleteCategory(@PathVariable UUID id, Authentication authentication){
+        String userEmail = authentication.getName();
         return buildResponse(
                 "Category deleted succesfully",
                 HttpStatus.OK,
-                categoryService.deleteCategory(id)
+                categoryService.deleteCategory(id, userEmail)
         );
     }
 
