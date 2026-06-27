@@ -34,6 +34,10 @@ public class Order {
     private Coupon coupon;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "payment_method_id", nullable = false)
+    private PaymentMethod paymentMethod;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "shipping_method_id", nullable = false)
     private ShippingMethod shippingMethod;
 
@@ -64,4 +68,5 @@ public class Order {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
 }

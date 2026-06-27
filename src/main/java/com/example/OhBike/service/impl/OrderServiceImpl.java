@@ -12,7 +12,6 @@ import com.example.OhBike.mapper.CartMapper;
 import com.example.OhBike.mapper.OrderMapper;
 import com.example.OhBike.repository.*;
 import com.example.OhBike.service.OrderService;
-import com.example.OhBike.service.impl.CouponServiceImpl;
 import com.example.OhBike.util.AuthUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +27,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
-    private final CartItemRepository cartItemRepository;
+    private final PaymentMethodRepository paymentMethodRepository;
     private final ShippingMethodRepository shippingMethodRepository;
     private final CouponRepository couponRepository;
     private final ProductVariantRepository variantRepository;
@@ -42,7 +41,9 @@ public class OrderServiceImpl implements OrderService {
         Cart cart = getCartOfCurrentUser();
         validateCartNotEmpty(cart);
 
+        findPayment(request.getPaymentMethodId());
         ShippingMethod shipping = findShipping(request.getShippingMethodId());
+
         BigDecimal subtotal = calculateSubtotal(cart);
         BigDecimal discountAmount = BigDecimal.ZERO;
         String couponCode = null;
@@ -58,7 +59,9 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal total = subtotal.subtract(discountAmount).add(shippingCost);
 
         List<CartItemResponse> itemDtos = cart.getItems()
-                .stream().map(cartMapper::toItemDto).toList();
+                .stream()
+                .map(cartMapper::toItemDto)
+                .toList();
 
         return CheckoutSummaryResponse.builder()
                 .items(itemDtos)
@@ -75,13 +78,16 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponse checkout(CheckoutRequest request) {
         UUID userId = AuthUtil.getCurrentUserId();
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Cart cart = getCartOfCurrentUser();
         validateCartNotEmpty(cart);
 
+        PaymentMethod paymentMethod = findPayment(request.getPaymentMethodId());
         ShippingMethod shipping = findShipping(request.getShippingMethodId());
+
         BigDecimal subtotal = calculateSubtotal(cart);
         BigDecimal discountAmount = BigDecimal.ZERO;
         Coupon coupon = null;
@@ -98,6 +104,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = Order.builder()
                 .user(user)
                 .coupon(coupon)
+                .paymentMethod(paymentMethod)
                 .shippingMethod(shipping)
                 .status(OrderStatus.PENDING)
                 .subtotal(subtotal)
@@ -106,39 +113,41 @@ public class OrderServiceImpl implements OrderService {
                 .total(total)
                 .build();
 
-        List<OrderDetail> details = cart.getItems().stream().map(item -> {
-            ProductVariant variant = item.getVariant();
+        List<OrderDetail> details = cart.getItems().stream()
+                .map(item -> {
+                    ProductVariant variant = item.getVariant();
 
-            if (variant.getStock() < item.getQuantity()) {
-                throw new BusinessRuleException(
-                        "Insufficient stock for variant: " + variant.getSku() +
-                                ". Available: " + variant.getStock());
-            }
+                    if (variant.getStock() < item.getQuantity()) {
+                        throw new BusinessRuleException(
+                                "Insufficient stock for variant: " + variant.getSku()
+                                        + ". Available: " + variant.getStock()
+                        );
+                    }
 
-            variant.setStock(variant.getStock() - item.getQuantity());
-            variantRepository.save(variant);
+                    variant.setStock(variant.getStock() - item.getQuantity());
+                    variantRepository.save(variant);
 
-            BigDecimal itemSubtotal = variant.getPrice()
-                    .multiply(BigDecimal.valueOf(item.getQuantity()));
+                    BigDecimal itemSubtotal = variant.getPrice()
+                            .multiply(BigDecimal.valueOf(item.getQuantity()));
 
-            return OrderDetail.builder()
-                    .order(order)
-                    .variant(variant)
-                    .quantity(item.getQuantity())
-                    .unitPrice(variant.getPrice())
-                    .subtotal(itemSubtotal)
-                    .build();
-        }).toList();
+                    return OrderDetail.builder()
+                            .order(order)
+                            .variant(variant)
+                            .quantity(item.getQuantity())
+                            .unitPrice(variant.getPrice())
+                            .subtotal(itemSubtotal)
+                            .build();
+                })
+                .toList();
 
         order.setDetails(details);
+
         Order saved = orderRepository.save(order);
 
-        // Redimir cupón si se usó
         if (coupon != null) {
             couponService.redeemCoupon(coupon.getCode());
         }
 
-        // Vaciar el carrito
         cart.getItems().clear();
         cartRepository.save(cart);
 
@@ -152,7 +161,8 @@ public class OrderServiceImpl implements OrderService {
 
         if (order.getStatus() != OrderStatus.PENDING) {
             throw new BusinessRuleException(
-                    "Order cannot be paid. Current status: " + order.getStatus());
+                    "Order cannot be paid. Current status: " + order.getStatus()
+            );
         }
 
         order.setStatus(OrderStatus.PAID);
@@ -167,7 +177,8 @@ public class OrderServiceImpl implements OrderService {
 
         if (order.getStatus() != OrderStatus.PAID) {
             throw new BusinessRuleException(
-                    "Order cannot be shipped. Current status: " + order.getStatus());
+                    "Order cannot be shipped. Current status: " + order.getStatus()
+            );
         }
 
         order.setStatus(OrderStatus.SHIPPED);
@@ -176,26 +187,33 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponse getById(UUID orderId) {
-        return orderMapper.toDto(
-                orderRepository.findById(orderId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId)));
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId));
+
+        return orderMapper.toDto(order);
     }
 
     @Override
     public List<OrderResponse> getMyOrders() {
         UUID userId = AuthUtil.getCurrentUserId();
+
         return orderRepository.findByUser_Id(userId)
-                .stream().map(orderMapper::toDto).toList();
+                .stream()
+                .map(orderMapper::toDto)
+                .toList();
     }
 
     @Override
     public List<OrderResponse> getAllOrders() {
         return orderRepository.findAll()
-                .stream().map(orderMapper::toDto).toList();
+                .stream()
+                .map(orderMapper::toDto)
+                .toList();
     }
 
     private Cart getCartOfCurrentUser() {
         UUID userId = AuthUtil.getCurrentUserId();
+
         return cartRepository.findByUser_Id(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found for user: " + userId));
     }
@@ -204,6 +222,11 @@ public class OrderServiceImpl implements OrderService {
         if (cart.getItems() == null || cart.getItems().isEmpty()) {
             throw new BusinessRuleException("Cannot checkout with an empty cart");
         }
+    }
+
+    private PaymentMethod findPayment(UUID paymentMethodId) {
+        return paymentMethodRepository.findById(paymentMethodId)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment method not found: " + paymentMethodId));
     }
 
     private ShippingMethod findShipping(UUID shippingMethodId) {
@@ -218,9 +241,11 @@ public class OrderServiceImpl implements OrderService {
         if (coupon.getExpirationDate().isBefore(java.time.LocalDate.now())) {
             throw new BusinessRuleException("Coupon has expired: " + code);
         }
+
         if (coupon.getUsedCount() >= coupon.getMaxUses()) {
             throw new BusinessRuleException("Coupon is sold out: " + code);
         }
+
         return coupon;
     }
 
@@ -233,11 +258,14 @@ public class OrderServiceImpl implements OrderService {
 
     private Order findOrderOfCurrentUser(UUID orderId) {
         UUID userId = AuthUtil.getCurrentUserId();
+
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId));
+
         if (!order.getUser().getId().equals(userId)) {
             throw new BusinessRuleException("This order does not belong to the current user");
         }
+
         return order;
     }
 }
