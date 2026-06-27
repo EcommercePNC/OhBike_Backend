@@ -66,8 +66,8 @@ public class PaymentMethodService {
         PaymentMethod entity = paymentMethodRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Payment method not found with ID:: " + id));
 
-        entity.setName(request.name());
-        entity.setDescription(request.description());
+        entity.setName(request.getName());
+        entity.setDescription(request.getDescription());
         PaymentMethod updated = paymentMethodRepository.save(entity);
 
         return GeneralResponse.builder()

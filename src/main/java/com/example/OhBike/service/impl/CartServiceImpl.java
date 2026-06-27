@@ -3,6 +3,7 @@ package com.example.OhBike.service.impl;
 import com.example.OhBike.dto.request.AddCartItemRequest;
 import com.example.OhBike.dto.request.UpdateCartItemRequest;
 import com.example.OhBike.dto.response.CartResponse;
+import com.example.OhBike.dto.response.CartSummaryResponse;
 import com.example.OhBike.entity.Cart;
 import com.example.OhBike.entity.CartItem;
 import com.example.OhBike.entity.ProductVariant;
@@ -20,6 +21,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Service
@@ -32,15 +34,11 @@ public class CartServiceImpl implements CartService {
     private final UserRepository userRepository;
     private final CartMapper cartMapper;
 
-    // GET /cart/items
-
     @Override
     public CartResponse getMyCart() {
         Cart cart = getOrCreateCart();
         return cartMapper.toDto(cart);
     }
-
-    // POST /cart/items
 
     @Override
     @Transactional
@@ -75,8 +73,6 @@ public class CartServiceImpl implements CartService {
         return cartMapper.toDto(refreshCart(cart.getId()));
     }
 
-    // PUT /cart/items/{cartItemId}
-
     @Override
     @Transactional
     public CartResponse updateItem(UUID cartItemId, UpdateCartItemRequest request) {
@@ -96,8 +92,6 @@ public class CartServiceImpl implements CartService {
         return cartMapper.toDto(refreshCart(item.getCart().getId()));
     }
 
-    // DELETE /cart/items/{cartItemId}
-
     @Override
     @Transactional
     public CartResponse removeItem(UUID cartItemId) {
@@ -106,8 +100,6 @@ public class CartServiceImpl implements CartService {
         cartItemRepository.delete(item);
         return cartMapper.toDto(refreshCart(cartId));
     }
-
-    // DELETE /cart/items
 
     @Override
     @Transactional
@@ -118,7 +110,6 @@ public class CartServiceImpl implements CartService {
         return cartMapper.toDto(refreshCart(cart.getId()));
     }
 
-    // Busca el carrito del usuario actual y si no existe, entonces crea uno nuevo
     private Cart getOrCreateCart() {
         UUID userId = AuthUtil.getCurrentUserId();
 
@@ -130,13 +121,11 @@ public class CartServiceImpl implements CartService {
         });
     }
 
-    // Recarga el carrito desde BD para tener los items frescos tras modifcaciones.
     private Cart refreshCart(UUID cartId) {
         return cartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
     }
 
-    // Busca un CartItem y verifica que pertenezca al usuario autenticado
     private CartItem findCartItemOfCurrentUser(UUID cartItemId) {
         UUID userId = AuthUtil.getCurrentUserId();
         CartItem item = cartItemRepository.findById(cartItemId)
@@ -148,10 +137,38 @@ public class CartServiceImpl implements CartService {
         return item;
     }
 
-    //
     private ProductVariant findActiveVariant(UUID variantId) {
         return variantRepository.findById(variantId)
                 .filter(ProductVariant::getActive)
                 .orElseThrow(() -> new ResourceNotFoundException("Variant not found with id: " + variantId));
+    }
+
+    @Override
+    public CartSummaryResponse getSummary() {
+        Cart cart = getOrCreateCart();
+
+        BigDecimal subtotal = cart.getItems().stream()
+                .map(item -> item.getVariant().getPrice()
+                        .multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        int totalItems = cart.getItems().stream()
+                .mapToInt(CartItem::getQuantity).sum();
+
+        BigDecimal shipping = subtotal.compareTo(BigDecimal.ZERO) == 0
+                ? BigDecimal.ZERO
+                : new BigDecimal("5.00");
+
+        BigDecimal discount = BigDecimal.ZERO;
+
+        BigDecimal total = subtotal.add(shipping).subtract(discount);
+
+        return CartSummaryResponse.builder()
+                .subtotal(subtotal)
+                .discount(discount)
+                .shipping(shipping)
+                .total(total)
+                .totalItems(totalItems)
+                .build();
     }
 }
