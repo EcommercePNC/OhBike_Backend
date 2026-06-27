@@ -2,13 +2,24 @@ package com.example.OhBike.mapper;
 
 import com.example.OhBike.dto.response.WishlistResponse;
 import com.example.OhBike.entity.Wishlist;
+import lombok.RequiredArgsConstructor;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring", uses = {ProductMapper.class})
-public interface WishlistMapper {
+@Component
+@RequiredArgsConstructor
+public class WishlistMapper {
 
-    @Mapping(source = "id", target = "wishlistId")
-    @Mapping(source = "createdAt", target = "addedAt")
-    WishlistResponse toDto(Wishlist wishlist);
+    private final ProductMapper productMapper;
+
+    public WishlistResponse toDto(Wishlist wishlist) {
+        if (wishlist == null) return null;
+
+        return WishlistResponse.builder()
+                .wishlistId(wishlist.getId())
+                .product(productMapper.toDto(wishlist.getProduct()))
+                .addedAt(wishlist.getCreatedAt())
+                .build();
+    }
 }
