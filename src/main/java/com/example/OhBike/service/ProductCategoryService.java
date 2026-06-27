@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ProductCategoryService {
-    ProductCategoryResponse createCategory(ProductCategoryRequest request);
+    ProductCategoryResponse createCategory(ProductCategoryRequest request, String userEmail);
     List<ProductCategoryResponse> getAllCategories();
     ProductCategoryResponse getCategoryById(UUID id);
-    ProductCategoryResponse updateCategory(UpdateProductCategoryRequest request, UUID id);
-    ProductCategoryResponse deleteCategory(UUID id);
+    ProductCategoryResponse updateCategory(UpdateProductCategoryRequest request, UUID id, String userEmail);
+    ProductCategoryResponse deleteCategory(UUID id, String userEmail);
 }

@@ -30,6 +30,31 @@ public class ProductServiceImpl implements ProductService{
     private final ProductCategoryRepository categoryRepository;
     private final ProductMapper productMapper;
 
+    private ProductResponse processProductUpdate(UpdateProductRequest request, Product existingProduct) {
+        if (request.getName() == null &&
+                request.getDescription() == null &&
+                request.getBasePrice() == null &&
+                request.getCategoryId() == null) {
+            throw new BusinessRuleException("You must provide at least one field to update");
+        }
+
+        if (request.getName() != null && !request.getName().isBlank() &&
+                !existingProduct.getName().equalsIgnoreCase(request.getName())) {
+            if (productRepository.existsByNameIgnoreCase(request.getName())) {
+                throw new BusinessRuleException("Product name is already in use: " + request.getName());
+            }
+        }
+
+        ProductCategory categoryToUpdate = null;
+        if (request.getCategoryId() != null) {
+            categoryToUpdate = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + request.getCategoryId()));
+        }
+
+        Product updatedProduct = productMapper.toEntityUpdate(request, existingProduct, categoryToUpdate);
+        return productMapper.toDto(productRepository.save(updatedProduct));
+    }
+
     @Override
     @Transactional
     public ProductResponse createProduct(ProductRequest request, String sellerEmail) {
@@ -111,12 +136,6 @@ public class ProductServiceImpl implements ProductService{
     @Override
     @Transactional
     public ProductResponse updateProduct(UpdateProductRequest request, UUID id, String sellerEmail) {
-        if (request.getName() == null &&
-                request.getDescription() == null &&
-                request.getBasePrice() == null &&
-                request.getCategoryId() == null) {
-            throw new BusinessRuleException("You must provide at least one field to update");
-        }
 
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
@@ -124,19 +143,15 @@ public class ProductServiceImpl implements ProductService{
         if (!existingProduct.getSeller().getEmail().equals(sellerEmail)) {
             throw new UnauthorizedOperationException(" You do not have permission to update this product because you are not the owner.");
         }
-        if (request.getName() != null && !request.getName().isBlank() &&
-                !existingProduct.getName().equalsIgnoreCase(request.getName())) {
-            if (productRepository.existsByNameIgnoreCase(request.getName())) {
-                throw new BusinessRuleException("Product name is already in use: " + request.getName());
-            }
-        }
-        ProductCategory categoryToUpdate = null;
-        if(request.getCategoryId() != null){
-            categoryToUpdate = categoryRepository.findById(request.getCategoryId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: "));
-        }
-        Product updatedProduct = productMapper.toEntityUpdate(request, existingProduct, categoryToUpdate);
-        return productMapper.toDto(productRepository.save(updatedProduct));
+        return processProductUpdate(request, existingProduct);
+    }
+
+    @Override
+    @Transactional
+    public ProductResponse updateProductAsAdmin(UpdateProductRequest request, UUID id) {
+        Product existingProduct = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        return processProductUpdate(request, existingProduct);
     }
 
     @Override

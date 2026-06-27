@@ -1,6 +1,8 @@
 package com.example.OhBike.controller;
 
 import com.example.OhBike.dto.request.ProductRequest;
+import com.example.OhBike.dto.request.UpdateProductCategoryRequest;
+import com.example.OhBike.dto.request.UpdateProductRequest;
 import com.example.OhBike.dto.response.GeneralResponse;
 import com.example.OhBike.service.ProductService;
 import jakarta.validation.Valid;
@@ -8,13 +10,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/admin/products")
@@ -32,6 +33,19 @@ public class AdminProductController {
                 "Product created successfully",
                 HttpStatus.CREATED,
                 productService.createProductAsAdmin(request)
+        );
+    }
+
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<GeneralResponse> updateProductAsAdmin(
+            @Valid @RequestBody UpdateProductRequest request,
+            @PathVariable UUID id) {
+
+        return buildResponse(
+                "Product updated successfully by Admin",
+                HttpStatus.OK,
+                productService.updateProductAsAdmin(request, id) // <-- Llamamos a un método nuevo
         );
     }
 

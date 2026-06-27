@@ -15,4 +15,6 @@ public interface ProductService {
     ProductResponse deleteProduct(UUID id, String sellerEmail);
 
     ProductResponse createProductAsAdmin(ProductRequest request);
+    ProductResponse updateProductAsAdmin(UpdateProductRequest request, UUID id);
+
 }
