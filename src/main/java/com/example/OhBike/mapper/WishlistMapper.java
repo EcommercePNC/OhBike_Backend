@@ -3,8 +3,6 @@ package com.example.OhBike.mapper;
 import com.example.OhBike.dto.response.WishlistResponse;
 import com.example.OhBike.entity.Wishlist;
 import lombok.RequiredArgsConstructor;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.springframework.stereotype.Component;
 
 @Component
