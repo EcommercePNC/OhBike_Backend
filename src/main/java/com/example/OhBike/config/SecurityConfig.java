@@ -17,7 +17,6 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
 @RequiredArgsConstructor
 @EnableMethodSecurity
 public class SecurityConfig {

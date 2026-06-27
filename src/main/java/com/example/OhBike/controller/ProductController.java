@@ -3,18 +3,20 @@ package com.example.OhBike.controller;
 import com.example.OhBike.dto.request.ProductRequest;
 import com.example.OhBike.dto.request.UpdateProductRequest;
 import com.example.OhBike.dto.response.GeneralResponse;
-import com.example.OhBike.dto.response.ProductResponse;
+import com.example.OhBike.service.InventoryService;
 import com.example.OhBike.service.ProductService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import com.example.OhBike.service.InventoryService;
-import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -27,11 +29,13 @@ public class ProductController {
     private final ProductService productService;
     private final InventoryService inventoryService;
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    @PreAuthorize("hasAuthority('SELLER')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('SELLER')")
     public ResponseEntity<GeneralResponse> createProduct(
-            @Valid @RequestBody ProductRequest request, Authentication authentication) {
+            @Valid @RequestBody ProductRequest request,
+            Authentication authentication
+    ) {
+
         String sellerEmail = authentication.getName();
 
         return buildResponse(
@@ -42,7 +46,9 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<GeneralResponse> getAllPublicProducts(@RequestParam(required = false) UUID categoryId) {
+    public ResponseEntity<GeneralResponse> getAllPublicProducts(
+            @RequestParam(required = false) UUID categoryId
+    ) {
         return buildResponse(
                 "Products found",
                 HttpStatus.OK,
@@ -52,18 +58,22 @@ public class ProductController {
 
     @GetMapping("/my-products")
     @PreAuthorize("hasAuthority('SELLER')")
-    public ResponseEntity<GeneralResponse> getSellerProducts(Authentication authentication) {
-        String sellerEmail = authentication.getName();
+    public ResponseEntity<GeneralResponse> getSellerProducts(
+            Authentication authentication
+    ) {
+
         return buildResponse(
                 "Seller products retrieved successfully",
                 HttpStatus.OK,
-                productService.getProductsBySellerEmail(sellerEmail)
+                productService.getProductsBySellerEmail(authentication.getName())
         );
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<GeneralResponse> getProductById(
-            @PathVariable UUID id) {
+            @PathVariable UUID id
+    ) {
+
         return buildResponse(
                 "Product found",
                 HttpStatus.OK,
@@ -71,35 +81,47 @@ public class ProductController {
         );
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}")
-    @PreAuthorize("hasAuthority('SELLER')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('SELLER')")
     public ResponseEntity<GeneralResponse> updateProduct(
             @Valid @RequestBody UpdateProductRequest request,
-            @PathVariable UUID id, Authentication authentication) {
-        String sellerEmail = authentication.getName();
+            @PathVariable UUID id,
+            Authentication authentication
+    ) {
+
         return buildResponse(
                 "Product updated successfully",
                 HttpStatus.OK,
-                productService.updateProduct(request, id, sellerEmail)
+                productService.updateProduct(
+                        request,
+                        id,
+                        authentication.getName()
+                )
         );
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('SELLER')")
-    public ResponseEntity<GeneralResponse> deleteProduct(@PathVariable UUID id, Authentication authentication) {
-        String sellerEmail = authentication.getName();
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('SELLER')")
+    public ResponseEntity<GeneralResponse> deleteProduct(
+            @PathVariable UUID id,
+            Authentication authentication
+    ) {
+
         return buildResponse(
                 "Product deleted successfully",
                 HttpStatus.OK,
-                productService.deleteProduct(id, sellerEmail)
+                productService.deleteProduct(
+                        id,
+                        authentication.getName()
+                )
         );
     }
 
-    // GET /api/products/{id}/availability
     @GetMapping("/{id}/availability")
-    public ResponseEntity<GeneralResponse> getAvailability(@PathVariable UUID id) {
+    public ResponseEntity<GeneralResponse> getAvailability(
+            @PathVariable UUID id
+    ) {
+
         return buildResponse(
                 "Product availability",
                 HttpStatus.OK,
@@ -107,15 +129,28 @@ public class ProductController {
         );
     }
 
-    private ResponseEntity<GeneralResponse> buildResponse(String message, HttpStatus status, Object data) {
-        String uri = ServletUriComponentsBuilder.fromCurrentRequestUri().build().getPath();
-        return ResponseEntity.status(status)
-                .body(GeneralResponse.builder()
-                        .uri(uri)
-                        .message(message)
-                        .status(status.value())
-                        .time(LocalDateTime.now())
-                        .data(data)
-                        .build());
+    private ResponseEntity<GeneralResponse> buildResponse(
+            String message,
+            HttpStatus status,
+            Object data
+    ) {
+
+        String uri =
+                ServletUriComponentsBuilder
+                        .fromCurrentRequestUri()
+                        .build()
+                        .getPath();
+
+        return ResponseEntity
+                .status(status)
+                .body(
+                        GeneralResponse.builder()
+                                .uri(uri)
+                                .message(message)
+                                .status(status.value())
+                                .time(LocalDateTime.now())
+                                .data(data)
+                                .build()
+                );
     }
 }
