@@ -53,6 +53,12 @@ public class CartController {
         return buildResponse("Cart cleared", HttpStatus.OK, cartService.clearCart());
     }
 
+    // GET /api/cart/summary
+    @GetMapping("/summary")
+    public ResponseEntity<GeneralResponse> getSummary() {
+        return buildResponse("Cart summary", HttpStatus.OK, cartService.getSummary());
+    }
+
     private ResponseEntity<GeneralResponse> buildResponse(String message, HttpStatus status, Object data) {
         String uri = ServletUriComponentsBuilder.fromCurrentRequestUri().build().getPath();
         return ResponseEntity.status(status)

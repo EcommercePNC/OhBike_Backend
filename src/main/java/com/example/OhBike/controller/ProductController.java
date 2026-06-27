@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import com.example.OhBike.service.InventoryService;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -20,7 +22,9 @@ import java.util.UUID;
 public class ProductController {
 
     private final ProductService productService;
+    private final InventoryService inventoryService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<GeneralResponse> createProduct(@Valid @RequestBody ProductRequest request) {
         return buildResponse(
@@ -48,6 +52,7 @@ public class ProductController {
         );
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}")
     public ResponseEntity<GeneralResponse> updateProduct(
             @Valid @RequestBody UpdateProductRequest request,
@@ -59,12 +64,23 @@ public class ProductController {
         );
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<GeneralResponse> deleteProduct(@PathVariable UUID id) {
         return buildResponse(
                 "Product deleted successfully",
                 HttpStatus.OK,
                 productService.deleteProduct(id)
+        );
+    }
+
+    // GET /api/products/{id}/availability
+    @GetMapping("/{id}/availability")
+    public ResponseEntity<GeneralResponse> getAvailability(@PathVariable UUID id) {
+        return buildResponse(
+                "Product availability",
+                HttpStatus.OK,
+                inventoryService.getAvailability(id)
         );
     }
 
