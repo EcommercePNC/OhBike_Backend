@@ -3,12 +3,14 @@ package com.example.OhBike.controller;
 import com.example.OhBike.dto.request.CheckoutRequest;
 import com.example.OhBike.dto.response.GeneralResponse;
 import com.example.OhBike.service.OrderService;
+import com.example.OhBike.service.ShipmentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -19,6 +21,7 @@ import java.util.UUID;
 public class OrderController {
 
     private final OrderService orderService;
+    private final ShipmentService shipmentService;
 
     // GET /api/orders/checkout/preview
     @GetMapping("/checkout/preview")
@@ -44,6 +47,7 @@ public class OrderController {
     }
 
     // PATCH /api/orders/{orderId}/ship
+    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @PatchMapping("/{orderId}/ship")
     public ResponseEntity<GeneralResponse> shipOrder(@PathVariable UUID orderId) {
         return buildResponse("Order marked as shipped", HttpStatus.OK,
@@ -65,10 +69,18 @@ public class OrderController {
     }
 
     // GET /api/orders
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<GeneralResponse> getAllOrders() {
         return buildResponse("All orders", HttpStatus.OK,
                 orderService.getAllOrders());
+    }
+
+    // GET /api/orders/{orderId}/tracking
+    @GetMapping("/{orderId}/tracking")
+    public ResponseEntity<GeneralResponse> getTracking(@PathVariable UUID orderId) {
+        return buildResponse("Order tracking", HttpStatus.OK,
+                shipmentService.getTracking(orderId));
     }
 
     private ResponseEntity<GeneralResponse> buildResponse(String message, HttpStatus status, Object data) {
