@@ -18,7 +18,6 @@ import com.example.OhBike.repository.CartRepository;
 import com.example.OhBike.repository.ProductVariantRepository;
 import com.example.OhBike.repository.UserRepository;
 import com.example.OhBike.service.CartService;
-import com.example.OhBike.util.AuthUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -73,7 +72,8 @@ public class CartServiceImpl implements CartService {
                             .variant(variant)
                             .quantity(request.getQuantity())
                             .build();
-                    cartItemRepository.save(newItem);
+                    cart.getItems().add(newItem);
+                    cartRepository.save(cart);
                 });
 
         return cartMapper.toDto(refreshCart(cart.getId()));
@@ -85,7 +85,7 @@ public class CartServiceImpl implements CartService {
         CartItem item = findCartItemOfCurrentUser(cartItemId, email);
 
         if (request.getQuantity() == 0) {
-            cartItemRepository.delete(item);
+            removeItemFromCart(item);
         } else {
             if (item.getVariant().getStock() < request.getQuantity()) {
                 throw new BusinessRuleException(
@@ -104,7 +104,7 @@ public class CartServiceImpl implements CartService {
     public CartResponse removeItem(UUID cartItemId, String email) {
         CartItem item = findCartItemOfCurrentUser(cartItemId, email);
         UUID cartId = item.getCart().getId();
-        cartItemRepository.delete(item);
+        removeItemFromCart(item);
         return cartMapper.toDto(refreshCart(cartId));
     }
 
@@ -201,7 +201,7 @@ public class CartServiceImpl implements CartService {
         }
 
         if (!toDelete.isEmpty()) {
-            cartItemRepository.deleteAll(toDelete);
+            toDelete.forEach(this::removeItemFromCart);
         }
 
         BigDecimal newSubtotal = validItems.stream()
@@ -232,6 +232,7 @@ public class CartServiceImpl implements CartService {
     }
 
     private Cart refreshCart(UUID cartId) {
+        cartRepository.flush();
         return cartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
     }
@@ -250,5 +251,11 @@ public class CartServiceImpl implements CartService {
         return variantRepository.findById(variantId)
                 .filter(ProductVariant::getActive)
                 .orElseThrow(() -> new ResourceNotFoundException("Variant not found: " + variantId));
+    }
+
+    private void removeItemFromCart(CartItem item) {
+        Cart cart = item.getCart();
+        cart.getItems().removeIf(cartItem -> cartItem.getId().equals(item.getId()));
+        cartItemRepository.delete(item);
     }
 }
