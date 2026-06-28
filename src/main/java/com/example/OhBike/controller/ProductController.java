@@ -30,12 +30,9 @@ public class ProductController {
     private final InventoryService inventoryService;
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('SELLER')")
+    @PreAuthorize("hasAuthority('SELLER')")
     public ResponseEntity<GeneralResponse> createProduct(
-            @Valid @RequestBody ProductRequest request,
-            Authentication authentication
-    ) {
-
+            @Valid @RequestBody ProductRequest request, Authentication authentication) {
         String sellerEmail = authentication.getName();
 
         return buildResponse(
@@ -46,9 +43,7 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<GeneralResponse> getAllPublicProducts(
-            @RequestParam(required = false) UUID categoryId
-    ) {
+    public ResponseEntity<GeneralResponse> getAllPublicProducts(@RequestParam(required = false) UUID categoryId) {
         return buildResponse(
                 "Products found",
                 HttpStatus.OK,
@@ -58,22 +53,18 @@ public class ProductController {
 
     @GetMapping("/my-products")
     @PreAuthorize("hasAuthority('SELLER')")
-    public ResponseEntity<GeneralResponse> getSellerProducts(
-            Authentication authentication
-    ) {
-
+    public ResponseEntity<GeneralResponse> getSellerProducts(Authentication authentication) {
+        String sellerEmail = authentication.getName();
         return buildResponse(
                 "Seller products retrieved successfully",
                 HttpStatus.OK,
-                productService.getProductsBySellerEmail(authentication.getName())
+                productService.getProductsBySellerEmail(sellerEmail)
         );
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<GeneralResponse> getProductById(
-            @PathVariable UUID id
-    ) {
-
+            @PathVariable UUID id) {
         return buildResponse(
                 "Product found",
                 HttpStatus.OK,
@@ -82,38 +73,26 @@ public class ProductController {
     }
 
     @PatchMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('SELLER')")
+    @PreAuthorize("hasAuthority('SELLER')")
     public ResponseEntity<GeneralResponse> updateProduct(
             @Valid @RequestBody UpdateProductRequest request,
-            @PathVariable UUID id,
-            Authentication authentication
-    ) {
-
+            @PathVariable UUID id, Authentication authentication) {
+        String sellerEmail = authentication.getName();
         return buildResponse(
                 "Product updated successfully",
                 HttpStatus.OK,
-                productService.updateProduct(
-                        request,
-                        id,
-                        authentication.getName()
-                )
+                productService.updateProduct(request, id, sellerEmail)
         );
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasAuthority('SELLER')")
-    public ResponseEntity<GeneralResponse> deleteProduct(
-            @PathVariable UUID id,
-            Authentication authentication
-    ) {
-
+    @PreAuthorize("hasAuthority('SELLER')")
+    public ResponseEntity<GeneralResponse> deleteProduct(@PathVariable UUID id, Authentication authentication) {
+        String sellerEmail = authentication.getName();
         return buildResponse(
                 "Product deleted successfully",
                 HttpStatus.OK,
-                productService.deleteProduct(
-                        id,
-                        authentication.getName()
-                )
+                productService.deleteProduct(id, sellerEmail)
         );
     }
 
