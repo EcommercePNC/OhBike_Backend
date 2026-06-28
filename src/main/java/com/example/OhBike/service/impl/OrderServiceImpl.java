@@ -13,6 +13,7 @@ import com.example.OhBike.mapper.OrderMapper;
 import com.example.OhBike.repository.*;
 import com.example.OhBike.service.OrderService;
 import com.example.OhBike.util.AuthUtil;
+import com.example.OhBike.service.InvoiceService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final CartMapper cartMapper;
     private final CouponServiceImpl couponService;
+    private final InvoiceService invoiceService;
 
     @Override
     public CheckoutSummaryResponse previewCheckout(CheckoutRequest request) {
@@ -166,7 +168,13 @@ public class OrderServiceImpl implements OrderService {
         }
 
         order.setStatus(OrderStatus.PAID);
-        return orderMapper.toDto(orderRepository.save(order));
+
+        Order saved = orderRepository.save(order);
+
+// Generar automáticamente PDF y XML
+        invoiceService.generateInvoicesForPaidOrder(saved);
+
+        return orderMapper.toDto(saved);
     }
 
     @Override
