@@ -4,6 +4,7 @@ import com.example.OhBike.dto.response.GeneralResponse;
 import com.example.OhBike.service.OrderItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api")
+@PreAuthorize("isAuthenticated()")
 @RequiredArgsConstructor
 public class OrderItemController {
 

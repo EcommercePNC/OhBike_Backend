@@ -11,6 +11,7 @@ import com.example.OhBike.service.DiscountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.OhBike.repository.UserRepository;
 
 import java.util.UUID;
 import java.util.List;
@@ -19,8 +20,10 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class DiscountServiceImpl implements DiscountService {
+
     private final DiscountRepository discountRepository;
     private final DiscountMapper discountMapper;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional

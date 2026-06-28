@@ -10,11 +10,11 @@ import java.util.UUID;
 
 public interface CartService {
 
-    CartResponse getMyCart();                                                // GET  /cart/items
-    CartResponse addItem(AddCartItemRequest request);                        // POST /cart/items
-    CartResponse updateItem(UUID cartItemId, UpdateCartItemRequest request); // PUT  /cart/items/{id}
-    CartResponse removeItem(UUID cartItemId);                                // DELETE /cart/items/{id}
-    CartResponse clearCart();                                                // DELETE /cart/items
-    CartSummaryResponse getSummary();                                        // GET  /cart/summary
-    CartRefreshResponse refresh();                                           // POST /cart/refresh
+    CartResponse getMyCart(String sellerEmail);                                                // GET  /cart/items
+    CartResponse addItem(AddCartItemRequest request, String sellerEmail);                        // POST /cart/items
+    CartResponse updateItem(UUID cartItemId, UpdateCartItemRequest request, String sellerEmail); // PUT  /cart/items/{id}
+    CartResponse removeItem(UUID cartItemId, String sellerEmail);                                // DELETE /cart/items/{id}
+    CartResponse clearCart(String sellerEmail);                                                // DELETE /cart/items
+    CartSummaryResponse getSummary(String sellerEmail);                                        // GET  /cart/summary
+    CartRefreshResponse refresh(String sellerEmail);                                           // POST /cart/refresh
 }

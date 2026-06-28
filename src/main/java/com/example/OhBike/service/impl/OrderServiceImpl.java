@@ -17,6 +17,7 @@ import com.example.OhBike.service.OrderService;
 import com.example.OhBike.util.AuthUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -40,8 +41,8 @@ public class OrderServiceImpl implements OrderService {
     private final CheckoutValidationService checkoutValidationService;
 
     @Override
-    public CheckoutSummaryResponse previewCheckout(CheckoutRequest request) {
-        Cart cart = getCartOfCurrentUser();
+    public CheckoutSummaryResponse previewCheckout(CheckoutRequest request, String email) {
+        Cart cart = getCartOfCurrentUser(email);
         validateCartNotEmpty(cart);
 
         findPayment(request.getPaymentMethodId());
@@ -79,7 +80,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderResponse checkout(CheckoutRequest request) {
+    public OrderResponse checkout(CheckoutRequest request, String email) {
 
         CheckoutValidationResponse validation = checkoutValidationService.validate(request);
         if (!validation.isValid()) {
@@ -88,11 +89,10 @@ public class OrderServiceImpl implements OrderService {
                     "Checkout failed validation: " + reasons);
         }
 
-        UUID userId = AuthUtil.getCurrentUserId();
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        Cart cart = getCartOfCurrentUser();
+        Cart cart = getCartOfCurrentUser(email);
         PaymentMethod paymentMethod = findPayment(request.getPaymentMethodId());
         ShippingMethod shipping = findShipping(request.getShippingMethodId());
 
@@ -152,8 +152,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderResponse payOrder(UUID orderId) {
-        Order order = findOrderOfCurrentUser(orderId);
+    public OrderResponse payOrder(UUID orderId, String email) {
+        Order order = findOrderOfCurrentUser(orderId, email);
 
         if (order.getStatus() != OrderStatus.PENDING) {
             throw new BusinessRuleException("ORDER_INVALID_STATUS",
@@ -187,9 +187,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderResponse> getMyOrders() {
-        UUID userId = AuthUtil.getCurrentUserId();
-        return orderRepository.findByUser_Id(userId)
+    public List<OrderResponse> getMyOrders(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));;
+        return orderRepository.findByUser_Id(user.getId())
                 .stream().map(orderMapper::toDto).toList();
     }
 
@@ -200,10 +201,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
 
-    private Cart getCartOfCurrentUser() {
-        UUID userId = AuthUtil.getCurrentUserId();
-        return cartRepository.findByUser_Id(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cart not found for user: " + userId));
+    private Cart getCartOfCurrentUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));;
+        return cartRepository.findByUser_Id(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found for user: " + email));
     }
 
     private void validateCartNotEmpty(Cart cart) {
@@ -244,12 +246,11 @@ public class OrderServiceImpl implements OrderService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    private Order findOrderOfCurrentUser(UUID orderId) {
-        UUID userId = AuthUtil.getCurrentUserId();
+    private Order findOrderOfCurrentUser(UUID orderId, String email) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId));
 
-        if (!order.getUser().getId().equals(userId)) {
+        if (!order.getUser().getEmail().equals(email)) {
             throw new BusinessRuleException("ACCESS_DENIED",
                     "This order does not belong to the current user.");
         }
