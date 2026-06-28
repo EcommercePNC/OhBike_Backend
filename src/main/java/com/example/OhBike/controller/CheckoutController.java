@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -21,12 +22,14 @@ public class CheckoutController {
 
     @PostMapping("/validate")
     public ResponseEntity<GeneralResponse> validate(
-            @Valid @RequestBody CheckoutRequest request) {
+            @Valid @RequestBody CheckoutRequest request,
+            Authentication authentication) {
+        String email = authentication.getName();
 
         return buildResponse(
                 "Checkout validation result",
                 HttpStatus.OK,
-                checkoutValidationService.validate(request)
+                checkoutValidationService.validate(request, email)
         );
     }
 

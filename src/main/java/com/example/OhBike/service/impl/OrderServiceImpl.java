@@ -82,7 +82,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponse checkout(CheckoutRequest request, String email) {
 
-        CheckoutValidationResponse validation = checkoutValidationService.validate(request);
+        CheckoutValidationResponse validation = checkoutValidationService.validate(request, email);
         if (!validation.isValid()) {
             String reasons = String.join(" | ", validation.getErrors());
             throw new BusinessRuleException("CHECKOUT_INVALID",

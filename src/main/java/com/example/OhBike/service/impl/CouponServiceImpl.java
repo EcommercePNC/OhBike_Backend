@@ -152,7 +152,7 @@ public class CouponServiceImpl implements CouponService {
 
         return switch (discount.getDiscountType()) {
             case PERCENTAGE -> calculatePercentage(originalPrice, discountValue);
-            case FIXED_AMOUNT -> originalPrice.subtract(discountValue);
+            case FIXED_AMOUNT -> originalPrice.subtract(discountValue).max(BigDecimal.ZERO);
             case NONE -> originalPrice;
         };
     }
