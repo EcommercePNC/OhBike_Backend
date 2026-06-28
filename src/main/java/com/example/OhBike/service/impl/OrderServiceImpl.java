@@ -95,6 +95,8 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Cart cart = getCartOfCurrentUser();
+        validateCartNotEmpty(cart);
+
         PaymentMethod paymentMethod = findPayment(request.getPaymentMethodId());
         ShippingMethod shipping = findShipping(request.getShippingMethodId());
 
@@ -126,15 +128,25 @@ public class OrderServiceImpl implements OrderService {
         List<OrderDetail> details = cart.getItems().stream()
                 .map(item -> {
                     ProductVariant variant = item.getVariant();
+
+                    if (variant.getStock() < item.getQuantity()) {
+                        throw new BusinessRuleException("STOCK_INSUFFICIENT",
+                                "Insufficient stock for variant: " + variant.getSku()
+                                        + ". Available: " + variant.getStock());
+                    }
+
                     variant.setStock(variant.getStock() - item.getQuantity());
                     variantRepository.save(variant);
+
+                    BigDecimal itemSubtotal = variant.getPrice()
+                            .multiply(BigDecimal.valueOf(item.getQuantity()));
 
                     return OrderDetail.builder()
                             .order(order)
                             .variant(variant)
                             .quantity(item.getQuantity())
                             .unitPrice(variant.getPrice())
-                            .subtotal(variant.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                            .subtotal(itemSubtotal)
                             .build();
                 })
                 .toList();
@@ -166,7 +178,6 @@ public class OrderServiceImpl implements OrderService {
 
         Order saved = orderRepository.save(order);
 
-// Generar automáticamente PDF y XML
         invoiceService.generateInvoicesForPaidOrder(saved);
 
         return orderMapper.toDto(saved);
