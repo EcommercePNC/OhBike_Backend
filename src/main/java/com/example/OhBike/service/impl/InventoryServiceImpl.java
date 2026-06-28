@@ -1,6 +1,7 @@
 package com.example.OhBike.service.impl;
 
 import com.example.OhBike.dto.response.ProductAvailabilityResponse;
+import com.example.OhBike.entity.Product;
 import com.example.OhBike.entity.ProductVariant;
 import com.example.OhBike.exception.ResourceNotFoundException;
 import com.example.OhBike.repository.ProductRepository;
@@ -21,9 +22,8 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public ProductAvailabilityResponse getAvailability(UUID productId) {
-        if (!productRepository.existsById(productId)) {
-            throw new ResourceNotFoundException("Product not found with id: " + productId);
-        }
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         List<ProductVariant> activeVariants =
                 variantRepository.findByProductIdAndActiveTrue(productId);
@@ -32,8 +32,10 @@ public class InventoryServiceImpl implements InventoryService {
                 .mapToInt(ProductVariant::getStock)
                 .sum();
 
+        boolean isTrulyAvailable = product.getAvailable() != null && product.getAvailable() && totalStock > 0;
+
         return ProductAvailabilityResponse.builder()
-                .available(totalStock > 0)
+                .available(isTrulyAvailable)
                 .stock(totalStock)
                 .build();
     }

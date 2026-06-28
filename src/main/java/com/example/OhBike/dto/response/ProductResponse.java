@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -17,4 +18,6 @@ public class ProductResponse {
     private ProductCategoryResponse category;
     private UUID sellerId;
     private String sellerName;
+
+    private List<ProductVariantResponse> variants;
 }

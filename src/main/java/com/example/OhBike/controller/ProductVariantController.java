@@ -23,6 +23,7 @@ public class ProductVariantController {
     private final ProductVariantService variantService;
 
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'SELLER')")
     public ResponseEntity<GeneralResponse> create(@Valid @RequestBody ProductVariantRequest request) {
         return buildResponse("Variant created successfully", HttpStatus.CREATED, variantService.create(request));
     }
