@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -40,14 +41,14 @@ public class ProductVariantController {
     public ResponseEntity<GeneralResponse> getLowStock() {
         return buildResponse("Low stock variants", HttpStatus.OK, variantService.getLowStock());
     }
-
+    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @PatchMapping("/{id}")
     public ResponseEntity<GeneralResponse> update(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateProductVariantRequest request) {
         return buildResponse("Variant updated successfully", HttpStatus.OK, variantService.update(id, request));
     }
-
+    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<GeneralResponse> delete(@PathVariable UUID id) {
         return buildResponse("Variant deactivated successfully", HttpStatus.OK, variantService.delete(id));

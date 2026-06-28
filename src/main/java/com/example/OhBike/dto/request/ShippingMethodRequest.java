@@ -4,14 +4,21 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
-public record ShippingMethodRequest(
-        @NotBlank(message = "Name is required")
-        @Size(max = 50, message = "Name must not exceed 50 characters")
-        String name,
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class ShippingMethodRequest {
 
-        @NotNull(message = "Base cost is required")
-        @PositiveOrZero(message = "Base cost must be zero or greater")
-        BigDecimal baseCost
-) {}
+        @NotBlank(message = "The name is required")
+        @Size(max = 50, message = "The name must not exceed 50 characters")
+        private String name;
+
+        @NotNull(message = "The price is required")
+        @PositiveOrZero(message = "The price must be zero or positive.")
+        private BigDecimal baseCost;
+}

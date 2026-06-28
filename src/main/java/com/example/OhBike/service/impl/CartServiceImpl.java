@@ -2,7 +2,10 @@ package com.example.OhBike.service.impl;
 
 import com.example.OhBike.dto.request.AddCartItemRequest;
 import com.example.OhBike.dto.request.UpdateCartItemRequest;
+import com.example.OhBike.dto.response.CartItemResponse;
+import com.example.OhBike.dto.response.CartRefreshResponse;
 import com.example.OhBike.dto.response.CartResponse;
+import com.example.OhBike.dto.response.CartSummaryResponse;
 import com.example.OhBike.entity.Cart;
 import com.example.OhBike.entity.CartItem;
 import com.example.OhBike.entity.ProductVariant;
@@ -20,6 +23,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -32,25 +38,21 @@ public class CartServiceImpl implements CartService {
     private final UserRepository userRepository;
     private final CartMapper cartMapper;
 
-    // GET /cart/items
-
     @Override
     public CartResponse getMyCart() {
         Cart cart = getOrCreateCart();
         return cartMapper.toDto(cart);
     }
 
-    // POST /cart/items
-
     @Override
     @Transactional
     public CartResponse addItem(AddCartItemRequest request) {
         Cart cart = getOrCreateCart();
-
         ProductVariant variant = findActiveVariant(request.getVariantId());
 
         if (variant.getStock() < request.getQuantity()) {
             throw new BusinessRuleException(
+                    "PRODUCT_OUT_OF_STOCK",
                     "Insufficient stock. Available: " + variant.getStock());
         }
 
@@ -59,7 +61,8 @@ public class CartServiceImpl implements CartService {
                     int newQty = existing.getQuantity() + request.getQuantity();
                     if (variant.getStock() < newQty) {
                         throw new BusinessRuleException(
-                                "Insufficient stock for requested total quantity. Available: " + variant.getStock());
+                                "PRODUCT_OUT_OF_STOCK",
+                                "Insufficient stock for total quantity. Available: " + variant.getStock());
                     }
                     existing.setQuantity(newQty);
                     cartItemRepository.save(existing);
@@ -75,8 +78,6 @@ public class CartServiceImpl implements CartService {
         return cartMapper.toDto(refreshCart(cart.getId()));
     }
 
-    // PUT /cart/items/{cartItemId}
-
     @Override
     @Transactional
     public CartResponse updateItem(UUID cartItemId, UpdateCartItemRequest request) {
@@ -87,6 +88,7 @@ public class CartServiceImpl implements CartService {
         } else {
             if (item.getVariant().getStock() < request.getQuantity()) {
                 throw new BusinessRuleException(
+                        "PRODUCT_OUT_OF_STOCK",
                         "Insufficient stock. Available: " + item.getVariant().getStock());
             }
             item.setQuantity(request.getQuantity());
@@ -95,8 +97,6 @@ public class CartServiceImpl implements CartService {
 
         return cartMapper.toDto(refreshCart(item.getCart().getId()));
     }
-
-    // DELETE /cart/items/{cartItemId}
 
     @Override
     @Transactional
@@ -107,8 +107,6 @@ public class CartServiceImpl implements CartService {
         return cartMapper.toDto(refreshCart(cartId));
     }
 
-    // DELETE /cart/items
-
     @Override
     @Transactional
     public CartResponse clearCart() {
@@ -118,40 +116,139 @@ public class CartServiceImpl implements CartService {
         return cartMapper.toDto(refreshCart(cart.getId()));
     }
 
-    // Busca el carrito del usuario actual y si no existe, entonces crea uno nuevo
+    @Override
+    public CartSummaryResponse getSummary() {
+        Cart cart = getOrCreateCart();
+
+        BigDecimal subtotal = cart.getItems().stream()
+                .map(item -> item.getVariant().getPrice()
+                        .multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        int totalItems = cart.getItems().stream()
+                .mapToInt(CartItem::getQuantity).sum();
+
+        BigDecimal shipping = subtotal.compareTo(BigDecimal.ZERO) == 0
+                ? BigDecimal.ZERO
+                : new BigDecimal("5.00");
+
+        BigDecimal discount = BigDecimal.ZERO;
+        BigDecimal total = subtotal.add(shipping).subtract(discount);
+
+        return CartSummaryResponse.builder()
+                .subtotal(subtotal)
+                .discount(discount)
+                .shipping(shipping)
+                .total(total)
+                .totalItems(totalItems)
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public CartRefreshResponse refresh() {
+        Cart cart = getOrCreateCart();
+
+        List<CartItemResponse> validItems = new ArrayList<>();
+        List<String> removedItems = new ArrayList<>();
+        List<String> adjustedItems = new ArrayList<>();
+        boolean wasModified = false;
+
+        List<CartItem> toDelete = new ArrayList<>();
+
+        for (CartItem item : cart.getItems()) {
+            ProductVariant variant = item.getVariant();
+            String sku = variant.getSku();
+
+            if (!variant.getActive()) {
+                toDelete.add(item);
+                removedItems.add(sku + " (variant no longer available)");
+                wasModified = true;
+                continue;
+            }
+
+            int available = variant.getStock();
+
+            if (available == 0) {
+                toDelete.add(item);
+                removedItems.add(sku + " (out of stock)");
+                wasModified = true;
+                continue;
+            }
+
+            if (available < item.getQuantity()) {
+                item.setQuantity(available);
+                cartItemRepository.save(item);
+                adjustedItems.add(sku + " adjusted to " + available);
+                wasModified = true;
+            }
+
+            BigDecimal subtotal = variant.getPrice()
+                    .multiply(BigDecimal.valueOf(item.getQuantity()));
+
+            validItems.add(CartItemResponse.builder()
+                    .cartItemId(item.getId())
+                    .variantId(variant.getId())
+                    .productName(variant.getProduct().getName())
+                    .size(variant.getSize())
+                    .color(variant.getColor())
+                    .sku(sku)
+                    .unitPrice(variant.getPrice())
+                    .quantity(item.getQuantity())
+                    .subtotal(subtotal)
+                    .build());
+        }
+
+        if (!toDelete.isEmpty()) {
+            cartItemRepository.deleteAll(toDelete);
+        }
+
+        BigDecimal newSubtotal = validItems.stream()
+                .map(CartItemResponse::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        int totalItems = validItems.stream()
+                .mapToInt(CartItemResponse::getQuantity).sum();
+
+        return CartRefreshResponse.builder()
+                .items(validItems)
+                .removedItems(removedItems)
+                .adjustedItems(adjustedItems)
+                .subtotal(newSubtotal)
+                .totalItems(totalItems)
+                .wasModified(wasModified)
+                .build();
+    }
+
+
     private Cart getOrCreateCart() {
         UUID userId = AuthUtil.getCurrentUserId();
-
         return cartRepository.findByUser_Id(userId).orElseGet(() -> {
             User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-            Cart newCart = Cart.builder().user(user).build();
-            return cartRepository.save(newCart);
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
+            return cartRepository.save(Cart.builder().user(user).build());
         });
     }
 
-    // Recarga el carrito desde BD para tener los items frescos tras modifcaciones.
     private Cart refreshCart(UUID cartId) {
         return cartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
     }
 
-    // Busca un CartItem y verifica que pertenezca al usuario autenticado
     private CartItem findCartItemOfCurrentUser(UUID cartItemId) {
         UUID userId = AuthUtil.getCurrentUserId();
         CartItem item = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cart item not found with id: " + cartItemId));
-
+                .orElseThrow(() -> new ResourceNotFoundException("Cart item not found: " + cartItemId));
         if (!item.getCart().getUser().getId().equals(userId)) {
-            throw new BusinessRuleException("This cart item does not belong to the current user");
+            throw new BusinessRuleException("ACCESS_DENIED",
+                    "This cart item does not belong to the current user.");
         }
         return item;
     }
 
-    //
     private ProductVariant findActiveVariant(UUID variantId) {
         return variantRepository.findById(variantId)
                 .filter(ProductVariant::getActive)
-                .orElseThrow(() -> new ResourceNotFoundException("Variant not found with id: " + variantId));
+                .orElseThrow(() -> new ResourceNotFoundException("Variant not found: " + variantId));
     }
 }

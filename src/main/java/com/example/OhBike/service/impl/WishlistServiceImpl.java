@@ -1,10 +1,10 @@
 package com.example.OhBike.service.impl;
 
-import com.example.OhBike.mapper.ProductMapper;
 import com.example.OhBike.dto.response.WishlistResponse;
 import com.example.OhBike.entity.Wishlist;
 import com.example.OhBike.exception.BusinessRuleException;
 import com.example.OhBike.exception.ResourceNotFoundException;
+import com.example.OhBike.mapper.WishlistMapper;
 import com.example.OhBike.repository.ProductRepository;
 import com.example.OhBike.repository.UserRepository;
 import com.example.OhBike.repository.WishlistRepository;
@@ -23,7 +23,7 @@ public class WishlistServiceImpl implements WishlistService {
     private final WishlistRepository wishlistRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
-    private final ProductMapper productMapper;
+    private final WishlistMapper wishlistMapper;
 
     @Override
     public List<WishlistResponse> getWishlistByUser(UUID userId) {
@@ -33,11 +33,7 @@ public class WishlistServiceImpl implements WishlistService {
 
         return wishlistRepository.findByUser_Id(userId)
                 .stream()
-                .map(wishlist -> WishlistResponse.builder()
-                        .wishlistId(wishlist.getId())
-                        .product(productMapper.toDto(wishlist.getProduct()))
-                        .addedAt(wishlist.getCreatedAt())
-                        .build())
+                .map(wishlistMapper::toDto)
                 .toList();
     }
 

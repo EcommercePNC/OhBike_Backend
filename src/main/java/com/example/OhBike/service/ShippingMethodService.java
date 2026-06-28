@@ -66,8 +66,8 @@ public class ShippingMethodService {
         ShippingMethod entity = shippingMethodRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Shipping method not found with ID: " + id));
 
-        entity.setName(request.name());
-        entity.setBaseCost(request.baseCost());
+        entity.setName(request.getName());
+        entity.setBaseCost(request.getBaseCost());
         ShippingMethod updated = shippingMethodRepository.save(entity);
 
         return GeneralResponse.builder()

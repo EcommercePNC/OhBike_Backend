@@ -20,43 +20,43 @@ import java.util.UUID;
 public class CouponController {
     private final CouponService couponService;
 
-    @PostMapping
+    @PostMapping // Admin only
     public ResponseEntity<GeneralResponse> createCoupon(@Valid @RequestBody CouponRequest request) {
         return buildResponse("Coupon created successfully", HttpStatus.CREATED, couponService.createCoupon(request));
     }
 
-    @GetMapping
+    @GetMapping // Admin, Seller
     public ResponseEntity<GeneralResponse> getAllCoupons() {
         return buildResponse("Coupons retrieved successfully", HttpStatus.OK, couponService.getAllCoupons());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id}")  // Admin, Seller
     public ResponseEntity<GeneralResponse> getByIdCoupon(@PathVariable UUID id) {
         return buildResponse("Coupon found successfully", HttpStatus.OK, couponService.getByIdCoupon(id));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id}") // Admin only
     public ResponseEntity<GeneralResponse> updateCoupon(@Valid @RequestBody CouponRequest request, @PathVariable UUID id) {
         return buildResponse("Coupon updated successfully", HttpStatus.OK, couponService.updateCoupon(request, id));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id}") // Admin only
     public ResponseEntity<GeneralResponse> deleteCoupon(@PathVariable UUID id) {
         return buildResponse("Coupon deleted successfully", HttpStatus.OK, couponService.deleteCoupon(id));
     }
 
-    @PostMapping("/validate")
+    @PostMapping("/validate") // Admin, Seller, Client
     public ResponseEntity<GeneralResponse> validateCoupon(@RequestBody CouponValidationRequest request) {
         return buildResponse("Validation successful", HttpStatus.OK,
                 couponService.validateCoupon(request.getCode(), request.getPurchaseAmount()));
     }
 
-    @PatchMapping("/{code}/redeem")
+    @PatchMapping("/{code}/redeem") // Admin, Seller
     public ResponseEntity<GeneralResponse> redeemCoupon(@PathVariable String code) {
         return buildResponse("Coupon redeemed successfully", HttpStatus.OK, couponService.redeemCoupon(code));
     }
 
-    @PatchMapping("/{code}/cancel")
+    @PatchMapping("/{code}/cancel") // Admin, Seller
     public ResponseEntity<GeneralResponse> cancelCoupon(@PathVariable String code) {
         return buildResponse("Coupon cancelled successfully", HttpStatus.OK, couponService.cancelCoupon(code));
     }

@@ -2,6 +2,7 @@ package com.example.OhBike.mapper;
 
 import com.example.OhBike.dto.request.RegisterRequest;
 import com.example.OhBike.dto.response.UserResponse;
+import com.example.OhBike.dto.response.UserSummaryResponse;
 import com.example.OhBike.entity.Role;
 import com.example.OhBike.entity.User;
 import org.springframework.stereotype.Component;
@@ -36,6 +37,17 @@ public class UserMapper {
                 .phone(user.getPhone())
                 .address(user.getAddress())
                 .role(user.getRole() != null ? user.getRole().getName() : null)
+                .build();
+    }
+
+    public UserSummaryResponse toSummaryResponse(User user) {
+        if (user == null) {
+            return null;
+        }
+
+        return UserSummaryResponse.builder()
+                .userId(user.getId())
+                .username(user.getName())
                 .build();
     }
 }
