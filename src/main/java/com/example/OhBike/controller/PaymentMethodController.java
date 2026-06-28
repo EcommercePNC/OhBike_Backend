@@ -1,52 +1,49 @@
 package com.example.OhBike.controller;
 
+import com.example.OhBike.dto.response.PaymentMethodResponse;
 import jakarta.validation.Valid;
 import com.example.OhBike.dto.response.GeneralResponse;
 import com.example.OhBike.dto.request.PaymentMethodRequest;
 import com.example.OhBike.service.PaymentMethodService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/payment-methods")
-@CrossOrigin(origins = "*")
+@RequestMapping("/api/payment-methods")
+@RequiredArgsConstructor
 public class PaymentMethodController {
 
-    @Autowired
-    private PaymentMethodService paymentMethodService;
+    private final PaymentMethodService service;
 
     @PostMapping
-    public ResponseEntity<GeneralResponse> create(@Valid @RequestBody PaymentMethodRequest request) {
-        // Ejecutamos el servicio y guardamos la respuesta del record
-        GeneralResponse response = paymentMethodService.create(request);
-        // Retornamos el objeto response explícitamente dentro de la entidad HTTP
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    public ResponseEntity<PaymentMethodResponse> create(@Valid @RequestBody PaymentMethodRequest request) {
+        return  ResponseEntity.status(HttpStatus.CREATED).body(service.createPaymentMethod(request));
     }
 
     @GetMapping
-    public ResponseEntity<GeneralResponse> getAll() {
-        GeneralResponse response = paymentMethodService.getAll();
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    public ResponseEntity<List<PaymentMethodResponse>> getAll() {
+        return ResponseEntity.ok(service.getAllPaymentMethods());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<GeneralResponse> getById(@PathVariable UUID id) {
-        GeneralResponse response = paymentMethodService.getById(id);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    public ResponseEntity<PaymentMethodResponse> getById(@PathVariable UUID id) {
+        return ResponseEntity.ok(service.getPaymentMethodById(id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<GeneralResponse> update(@PathVariable UUID id, @Valid @RequestBody PaymentMethodRequest request) {
-        GeneralResponse response = paymentMethodService.update(id, request);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    public ResponseEntity<PaymentMethodResponse> update(@PathVariable UUID id, @Valid @RequestBody PaymentMethodRequest request) {
+        return ResponseEntity.ok(service.updatePaymentMethod(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<GeneralResponse> delete(@PathVariable UUID id) {
-        GeneralResponse response = paymentMethodService.delete(id);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        service.deletePaymentMethod(id);
+        return ResponseEntity.noContent().build();
     }
 }

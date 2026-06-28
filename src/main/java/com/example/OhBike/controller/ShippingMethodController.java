@@ -1,47 +1,47 @@
 package com.example.OhBike.controller;
 
-import jakarta.validation.Valid;
-import com.example.OhBike.dto.response.GeneralResponse;
 import com.example.OhBike.dto.request.ShippingMethodRequest;
+import com.example.OhBike.dto.response.ShippingMethodResponse;
 import com.example.OhBike.service.ShippingMethodService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.UUID;
-import com.example.OhBike.entity.ShippingMethod;
 
+import java.util.List;
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/shipping-methods")
-@CrossOrigin(origins = "*")
+@RequestMapping("/api/shipping-methods")
+@RequiredArgsConstructor
 public class ShippingMethodController {
 
-    @Autowired
-    private ShippingMethodService shippingMethodService;
+    private final ShippingMethodService service;
 
     @PostMapping
-    public ResponseEntity<GeneralResponse> create(@Valid @RequestBody ShippingMethodRequest request) {
-        return new ResponseEntity<>(shippingMethodService.create(request), HttpStatus.CREATED);
+    public ResponseEntity<ShippingMethodResponse> create(@Valid @RequestBody ShippingMethodRequest request) {
+        return  ResponseEntity.status(HttpStatus.CREATED).body(service.createShippingMethod(request));
     }
 
     @GetMapping
-    public ResponseEntity<GeneralResponse> getAll() {
-        return new ResponseEntity<>(shippingMethodService.getAll(), HttpStatus.OK);
+    public ResponseEntity<List<ShippingMethodResponse>> getAll() {
+        return ResponseEntity.ok(service.getAllShippingMethods());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<GeneralResponse> getById(@PathVariable UUID id) {
-        return new ResponseEntity<>(shippingMethodService.getById(id), HttpStatus.OK);
+    public ResponseEntity<ShippingMethodResponse> getById(@PathVariable UUID id) {
+        return ResponseEntity.ok(service.getShippingMethodById(id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<GeneralResponse> update(@PathVariable UUID id, @Valid @RequestBody ShippingMethodRequest request) {
-        return new ResponseEntity<>(shippingMethodService.update(id, request), HttpStatus.OK);
+    public ResponseEntity<ShippingMethodResponse> update(@PathVariable UUID id, @Valid @RequestBody ShippingMethodRequest request) {
+        return ResponseEntity.ok(service.updateShippingMethod(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<GeneralResponse> delete(@PathVariable UUID id) {
-        return new ResponseEntity<>(shippingMethodService.delete(id), HttpStatus.OK);
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        service.deleteShippingMethod(id);
+        return ResponseEntity.noContent().build();
     }
 }

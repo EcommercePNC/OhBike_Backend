@@ -10,16 +10,16 @@ public class PaymentMethodMapper {
 
     public PaymentMethod toEntity(PaymentMethodRequest request) {
         return PaymentMethod.builder()
-                .name(request.name())
-                .description(request.description())
+                .name(request.getName())
+                .description(request.getDescription())
                 .build();
     }
 
     public PaymentMethodResponse toDto(PaymentMethod entity) {
-        return new PaymentMethodResponse(
-                entity.getId(),
-                entity.getName(),
-                entity.getDescription()
-        );
+        return PaymentMethodResponse.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .description(entity.getDescription())
+                .build();
     }
 }
