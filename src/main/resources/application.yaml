@@ -1,12 +1,10 @@
 spring:
   application:
     name: OhBike
-
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
-
+    url: jdbc:postgresql://localhost:5432/ecommerce_db
+    username: ecommerce_user
+    password: Ecom2026.
   jpa:
     show-sql: false
     hibernate:
@@ -14,7 +12,6 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-
 jwt:
-  secret: ${JWT_SECRET}
+  secret: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
   expiration: 1800000
