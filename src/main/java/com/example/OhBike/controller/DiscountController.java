@@ -34,7 +34,7 @@ public class DiscountController {
     }
 
     @GetMapping("/{id}") // Admin, Seller
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'SELLER')")
     public ResponseEntity<GeneralResponse> getByIdDiscount(@PathVariable UUID id) {
         return buildResponse("Discount found successfully", HttpStatus.OK, discountService.getByIdDiscount(id));
     }
