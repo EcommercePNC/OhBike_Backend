@@ -129,17 +129,4 @@ public class GlobalExceptionHandler {
                 .build();
         return ResponseEntity.status(status).body(response);
     }
-
-    private ResponseEntity<ApiErrorResponse> buildErrorResponse(
-            String uri, Object message, HttpStatus status) {
-
-        ApiErrorResponse body = ApiErrorResponse.builder()
-                .uri(uri)
-                .message(message)
-                .status(status.value())
-                .time(LocalDateTime.now())
-                .build();
-
-        return ResponseEntity.status(status).body(body);
-    }
 }
