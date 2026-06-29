@@ -1,53 +1,53 @@
 package com.example.OhBike.config;
 
 import com.example.OhBike.entity.Role;
+import com.example.OhBike.entity.User;
 import com.example.OhBike.repository.RoleRepository;
 import com.example.OhBike.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.UUID;
+import java.util.List;
 
 @Configuration
 public class DataLoaderConfig {
 
     @Bean
-    public CommandLineRunner initData(UserRepository userRepository, RoleRepository roleRepository, JdbcTemplate jdbcTemplate) {
+    public CommandLineRunner loadData(RoleRepository roleRepository,
+                                      UserRepository userRepository,
+                                      PasswordEncoder passwordEncoder) {
         return args -> {
-
-            Role clienteRole;
             if (roleRepository.count() == 0) {
-                clienteRole = Role.builder().name("ROLE_CLIENTE").build();
-                clienteRole = roleRepository.save(clienteRole);
-                System.out.println("Rol ROLE_CLIENTE creado");
-            } else {
-                clienteRole = roleRepository.findAll().stream()
-                        .filter(r -> r.getName().equals("ROLE_CLIENTE"))
-                        .findFirst()
-                        .orElseThrow(); // Tomamos el que ya existe
+                System.out.println("loading roles...");
+
+                Role client = Role.builder().name("CLIENT").build();
+                Role admin = Role.builder().name("ADMIN").build();
+                Role seller = Role.builder().name("SELLER").build();
+
+                roleRepository.saveAll(List.of(client, admin, seller));
+
+                System.out.println("roles loaded successfully.");
             }
 
-            // 2. Creamos el Usuario Mock
-            UUID mockId = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
+            Role adminRole = roleRepository.findByName("ADMIN")
+                    .orElseThrow(() -> new RuntimeException("Error: ADMIN role not found."));
 
-            if (!userRepository.existsById(mockId)) {
+            if (!userRepository.existsByRole(adminRole)) {
+                System.out.println("Creating unique Administrator user...");
 
-                // Usamos SQL nativo para forzar el INSERT y evitar que Hibernate
-                // se confunda con el UUID manual.
-                String sql = "INSERT INTO users (user_id, name, email, password, phone, address, rol_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                User superAdmin = User.builder()
+                        .name("Im Admin")
+                        .email("admin@ohbike.com")
+                        .password(passwordEncoder.encode("OhBike2026"))
+                        .phone("0000-0000")
+                        .address("Oficina Central Oh Bike")
+                        .role(adminRole)
+                        .build();
 
-                jdbcTemplate.update(sql,
-                        mockId,
-                        "Usuario Prueba",
-                        "test@ohbike.com",
-                        "123456", // Password sin encriptar
-                        "7777-8888",
-                        "Calle Principal 123",
-                        clienteRole.getId());
-
-                System.out.println("Usuario Mock creado exitosamente con ID: " + mockId);
+                userRepository.save(superAdmin);
+                System.out.println("Administrator created successfully.");
             }
         };
     }

@@ -5,7 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -14,7 +19,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -30,13 +35,25 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(name = "phone")
+    @Column(nullable = false, unique = true)
     private String phone;
 
-    @Column(name = "address")
+    @Column(nullable = false)
     private String address;
 
     @ManyToOne
     @JoinColumn(name = "rol_id", nullable = false)
     private Role role;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(
+                new SimpleGrantedAuthority(role.getName())
+        );
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
 }

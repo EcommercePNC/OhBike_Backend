@@ -1,11 +1,17 @@
 package com.example.OhBike.repository;
 
+import com.example.OhBike.entity.Role;
 import com.example.OhBike.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
+    Optional<User> findByEmail(String email);
+    boolean existsByEmail(String email);
+    boolean existsByPhone(String phone);
+    boolean existsByRole(Role role);
 }
