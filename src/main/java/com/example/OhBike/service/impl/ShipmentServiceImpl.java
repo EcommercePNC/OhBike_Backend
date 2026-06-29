@@ -2,10 +2,12 @@ package com.example.OhBike.service.impl;
 
 import com.example.OhBike.dto.response.OrderTrackingResponse;
 import com.example.OhBike.entity.Order;
+import com.example.OhBike.entity.User;
 import com.example.OhBike.entity.enums.OrderStatus;
 import com.example.OhBike.exception.BusinessRuleException;
 import com.example.OhBike.exception.ResourceNotFoundException;
 import com.example.OhBike.repository.OrderRepository;
+import com.example.OhBike.repository.UserRepository;
 import com.example.OhBike.service.ShipmentService;
 import com.example.OhBike.util.AuthUtil;
 import lombok.RequiredArgsConstructor;
@@ -18,17 +20,19 @@ import java.util.UUID;
 public class ShipmentServiceImpl implements ShipmentService {
 
     private final OrderRepository orderRepository;
+    private final UserRepository userRepository;
 
     @Override
-    public OrderTrackingResponse getTracking(UUID orderId) {
+    public OrderTrackingResponse getTracking(String email, UUID orderId) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("user not found"));
+
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Order not found with id: " + orderId));
 
-        // Solo el dueño de la orden o un ADMIN puede ver el tracking
-        UUID currentUserId = AuthUtil.getCurrentUserId();
-        boolean isOwner = order.getUser().getId().equals(currentUserId);
-        boolean isAdmin = AuthUtil.currentUserHasRole("ROLE_ADMIN");
+        boolean isOwner = user.getId().equals(order.getUser().getId());
+        boolean isAdmin = user.getRole().getName().equals("ADMIN");
 
         if (!isOwner && !isAdmin) {
             throw new BusinessRuleException("ACCESS_DENIED",

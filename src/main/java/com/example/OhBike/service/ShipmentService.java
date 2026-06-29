@@ -5,5 +5,5 @@ import com.example.OhBike.dto.response.OrderTrackingResponse;
 import java.util.UUID;
 
 public interface ShipmentService {
-    OrderTrackingResponse getTracking(UUID orderId);
+    OrderTrackingResponse getTracking(String email, UUID orderId);
 }
