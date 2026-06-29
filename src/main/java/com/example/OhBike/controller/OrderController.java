@@ -55,7 +55,7 @@ public class OrderController {
     }
 
     // PATCH /api/orders/{orderId}/ship
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'SELLER')")
     @PatchMapping("/{orderId}/ship")
     public ResponseEntity<GeneralResponse> shipOrder(@PathVariable UUID orderId) {
         return buildResponse("Order marked as shipped", HttpStatus.OK,
@@ -78,7 +78,7 @@ public class OrderController {
     }
 
     // GET /api/orders
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping
     public ResponseEntity<GeneralResponse> getAllOrders() {
         return buildResponse("All orders", HttpStatus.OK,
