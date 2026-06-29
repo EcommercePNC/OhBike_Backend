@@ -13,13 +13,13 @@ import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api")
-@PreAuthorize("isAuthenticated()")
 @RequiredArgsConstructor
 public class OrderItemController {
 
     private final OrderItemService orderItemService;
 
     @GetMapping("/vendor/orders/items")
+    @PreAuthorize("hasAuthority('SELLER')")
     public ResponseEntity<GeneralResponse> getVendorOrderItems() {
         return ResponseEntity.ok(
                 GeneralResponse.builder()
@@ -33,6 +33,7 @@ public class OrderItemController {
     }
 
     @GetMapping("/admin/orders/items")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<GeneralResponse> getAdminOrderItems() {
         return ResponseEntity.ok(
                 GeneralResponse.builder()

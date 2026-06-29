@@ -7,18 +7,19 @@ import com.example.OhBike.service.PaymentMethodService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/payment-methods")
-@CrossOrigin(origins = "*")
+@RequestMapping("/api/payment-methods")
 public class PaymentMethodController {
 
     @Autowired
     private PaymentMethodService paymentMethodService;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<GeneralResponse> create(@Valid @RequestBody PaymentMethodRequest request) {
 
         GeneralResponse response = paymentMethodService.create(request);
@@ -38,12 +39,14 @@ public class PaymentMethodController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<GeneralResponse> update(@PathVariable UUID id, @Valid @RequestBody PaymentMethodRequest request) {
         GeneralResponse response = paymentMethodService.update(id, request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<GeneralResponse> delete(@PathVariable UUID id) {
         GeneralResponse response = paymentMethodService.delete(id);
         return new ResponseEntity<>(response, HttpStatus.OK);
