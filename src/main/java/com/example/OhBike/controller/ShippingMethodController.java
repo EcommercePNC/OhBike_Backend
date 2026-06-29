@@ -7,6 +7,7 @@ import com.example.OhBike.service.ShippingMethodService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 import com.example.OhBike.entity.ShippingMethod;
@@ -14,8 +15,8 @@ import com.example.OhBike.entity.ShippingMethod;
 
 @RestController
 @RequestMapping("/api/v1/shipping-methods")
-@CrossOrigin(origins = "*")
-public class ShippingMethodController {
+@PreAuthorize("isAuthenticated()")
+ public class ShippingMethodController {
 
     @Autowired
     private ShippingMethodService shippingMethodService;

@@ -121,10 +121,28 @@ public class OrderServiceImpl implements OrderService {
                 .total(total)
                 .build();
 
-        List<OrderDetail> details = cart.getItems().stream()
+        if (coupon != null) {
+            couponService.redeemCoupon(coupon.getCode());
+        }
+
+        List<OrderDetail> details = cart.getItems()
+                .stream()
                 .map(item -> {
+
                     ProductVariant variant = item.getVariant();
-                    variant.setStock(variant.getStock() - item.getQuantity());
+
+                    if (variant.getStock() < item.getQuantity()) {
+                        throw new BusinessRuleException(
+                                "PRODUCT_OUT_OF_STOCK",
+                                variant.getSku()
+                        );
+                    }
+
+                    variant.setStock(
+                            variant.getStock()
+                                    - item.getQuantity()
+                    );
+
                     variantRepository.save(variant);
 
                     return OrderDetail.builder()
@@ -132,19 +150,26 @@ public class OrderServiceImpl implements OrderService {
                             .variant(variant)
                             .quantity(item.getQuantity())
                             .unitPrice(variant.getPrice())
-                            .subtotal(variant.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                            .subtotal(
+                                    variant.getPrice()
+                                            .multiply(
+                                                    BigDecimal.valueOf(
+                                                            item.getQuantity()
+                                                    )
+                                            )
+                            )
                             .build();
+
                 })
                 .toList();
 
         order.setDetails(details);
-        Order saved = orderRepository.save(order);
 
-        if (coupon != null) {
-            couponService.redeemCoupon(coupon.getCode());
-        }
+        Order saved =
+                orderRepository.save(order);
 
         cart.getItems().clear();
+
         cartRepository.save(cart);
 
         return orderMapper.toDto(saved);
