@@ -30,6 +30,10 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         String requestedRole = request.getRoleName().toUpperCase();
 
+        if(user.getRole().getName().equals("ADMIN")) {
+            throw new BusinessRuleException("Cannot remove ADMIN role");
+        }
+
         if(requestedRole.equals("ADMIN")) {
             throw new BusinessRuleException("Cannot assign ADMIN role");
         }

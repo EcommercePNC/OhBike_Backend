@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -20,26 +22,31 @@ public class DiscountController {
     private final DiscountService discountService;
 
     @PostMapping // Admin only
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<GeneralResponse> create(@Valid @RequestBody DiscountRequest request) {
-        return buildResponse("Discount created successfully", HttpStatus.CREATED, discountService.createDiscount(request));
+        return buildResponse("Discount created successfully", HttpStatus.CREATED, discountService.createDiscount(request ));
     }
 
-    @GetMapping("/active") // Admin, Seller, Client
+    @GetMapping("/active")
+    @PreAuthorize("isAuthenticated()")// Admin, Seller, Client
     public ResponseEntity<GeneralResponse> findAllActive() {
         return buildResponse("Active discounts retrieved successfully", HttpStatus.OK, discountService.findAllActiveDiscount());
     }
 
     @GetMapping("/{id}") // Admin, Seller
-    public ResponseEntity<GeneralResponse> getById(@PathVariable UUID id) {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<GeneralResponse> getByIdDiscount(@PathVariable UUID id) {
         return buildResponse("Discount found successfully", HttpStatus.OK, discountService.getByIdDiscount(id));
     }
 
     @PutMapping("/{id}") // Admin only
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<GeneralResponse> update(@PathVariable UUID id, @Valid @RequestBody DiscountRequest request) {
         return buildResponse("Discount updated successfully", HttpStatus.OK, discountService.updateDiscount(id, request));
     }
 
     @DeleteMapping("/{id}") // Admin only
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<GeneralResponse> delete(@PathVariable UUID id) {
         discountService.deleteDiscount(id);
         return ResponseEntity.ok(GeneralResponse.builder()
@@ -50,6 +57,7 @@ public class DiscountController {
     }
 
     @GetMapping // Admin, Seller, Client
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<GeneralResponse> getAllActiveDiscounts() {
         return buildResponse("List of active discounts", HttpStatus.OK, discountService.findAllActiveDiscount());
     }

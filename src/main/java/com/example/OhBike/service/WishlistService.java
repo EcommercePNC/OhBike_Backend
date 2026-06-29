@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface WishlistService {
-    List<WishlistResponse> getWishlistByUser(UUID userId);
-    void addProductToWishlist(UUID userId, UUID productId);
-    void removeProductFromWishlist(UUID userId, UUID productId);
+    List<WishlistResponse> getWishlistByUser(String email);
+    void addProductToWishlist(String email, UUID productId);
+    void removeProductFromWishlist(String email, UUID productId);
 }

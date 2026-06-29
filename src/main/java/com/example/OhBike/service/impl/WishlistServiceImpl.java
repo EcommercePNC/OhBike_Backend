@@ -1,6 +1,7 @@
 package com.example.OhBike.service.impl;
 
 import com.example.OhBike.dto.response.WishlistResponse;
+import com.example.OhBike.entity.User;
 import com.example.OhBike.entity.Wishlist;
 import com.example.OhBike.exception.BusinessRuleException;
 import com.example.OhBike.exception.ResourceNotFoundException;
@@ -26,12 +27,11 @@ public class WishlistServiceImpl implements WishlistService {
     private final WishlistMapper wishlistMapper;
 
     @Override
-    public List<WishlistResponse> getWishlistByUser(UUID userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new ResourceNotFoundException("User not found with ID: " + userId);
-        }
+    public List<WishlistResponse> getWishlistByUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
 
-        return wishlistRepository.findByUser_Id(userId)
+        return wishlistRepository.findByUser_Id(user.getId())
                 .stream()
                 .map(wishlistMapper::toDto)
                 .toList();
@@ -39,16 +39,16 @@ public class WishlistServiceImpl implements WishlistService {
 
     @Override
     @Transactional
-    public void addProductToWishlist(UUID userId, UUID productId) {
-        if (wishlistRepository.existsByUser_IdAndProduct_Id(userId, productId)) {
-            throw new BusinessRuleException("Product already exists in the wishlist");
-        }
-
-        var user = userRepository.findById(userId)
+    public void addProductToWishlist(String email, UUID productId) {
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         var product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        if (wishlistRepository.existsByUser_IdAndProduct_Id(user.getId(), productId)) {
+            throw new BusinessRuleException("Product already exists in the wishlist");
+        }
 
         Wishlist wishlist = Wishlist.builder()
                 .user(user)
@@ -60,11 +60,14 @@ public class WishlistServiceImpl implements WishlistService {
 
     @Override
     @Transactional
-    public void removeProductFromWishlist(UUID userId, UUID productId) {
-        if (!wishlistRepository.existsByUser_IdAndProduct_Id(userId, productId)) {
+    public void removeProductFromWishlist(String email, UUID productId) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (!wishlistRepository.existsByUser_IdAndProduct_Id(user.getId(), productId)) {
             throw new ResourceNotFoundException("Product not found in the user's wishlist");
         }
 
-        wishlistRepository.deleteByUser_IdAndProduct_Id(userId, productId);
+        wishlistRepository.deleteByUser_IdAndProduct_Id(user.getId(), productId);
     }
 }

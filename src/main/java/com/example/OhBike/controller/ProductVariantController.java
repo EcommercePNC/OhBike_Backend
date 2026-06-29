@@ -23,6 +23,7 @@ public class ProductVariantController {
     private final ProductVariantService variantService;
 
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'SELLER')")
     public ResponseEntity<GeneralResponse> create(@Valid @RequestBody ProductVariantRequest request) {
         return buildResponse("Variant created successfully", HttpStatus.CREATED, variantService.create(request));
     }
@@ -41,14 +42,14 @@ public class ProductVariantController {
     public ResponseEntity<GeneralResponse> getLowStock() {
         return buildResponse("Low stock variants", HttpStatus.OK, variantService.getLowStock());
     }
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'SELLER')")
     @PatchMapping("/{id}")
     public ResponseEntity<GeneralResponse> update(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateProductVariantRequest request) {
         return buildResponse("Variant updated successfully", HttpStatus.OK, variantService.update(id, request));
     }
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'SELLER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<GeneralResponse> delete(@PathVariable UUID id) {
         return buildResponse("Variant deactivated successfully", HttpStatus.OK, variantService.delete(id));

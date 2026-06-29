@@ -8,6 +8,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -23,46 +25,66 @@ public class CartController {
 
     // GET /api/cart/items
     @GetMapping("/items")
-    public ResponseEntity<GeneralResponse> getMyCart() {
-        return buildResponse("Cart retrieved successfully", HttpStatus.OK, cartService.getMyCart());
+    @PreAuthorize("hasAuthority('CLIENT')")
+    public ResponseEntity<GeneralResponse> getMyCart(Authentication authentication) {
+        String clientEmail = authentication.getName();
+        return buildResponse("Cart retrieved successfully", HttpStatus.OK, cartService.getMyCart(clientEmail));
     }
 
     // POST /api/cart/items
     @PostMapping("/items")
-    public ResponseEntity<GeneralResponse> addItem(@Valid @RequestBody AddCartItemRequest request) {
-        return buildResponse("Item added to cart", HttpStatus.OK, cartService.addItem(request));
+    @PreAuthorize("hasAuthority('CLIENT')")
+    public ResponseEntity<GeneralResponse> addItem(@Valid @RequestBody AddCartItemRequest request, Authentication authentication) {
+        String clientEmail = authentication.getName();
+
+        return buildResponse("Item added to cart", HttpStatus.OK, cartService.addItem(request, clientEmail));
     }
 
     // PUT /api/cart/items/{cartItemId}
     @PutMapping("/items/{cartItemId}")
+    @PreAuthorize("hasAuthority('CLIENT')")
     public ResponseEntity<GeneralResponse> updateItem(
             @PathVariable UUID cartItemId,
-            @Valid @RequestBody UpdateCartItemRequest request) {
-        return buildResponse("Cart item updated", HttpStatus.OK, cartService.updateItem(cartItemId, request));
+            @Valid @RequestBody UpdateCartItemRequest request,
+            Authentication authentication) {
+        String clientEmail = authentication.getName();
+        return buildResponse("Cart item updated", HttpStatus.OK, cartService.updateItem(cartItemId, request, clientEmail));
     }
 
     // DELETE /api/cart/items/{cartItemId}
     @DeleteMapping("/items/{cartItemId}")
-    public ResponseEntity<GeneralResponse> removeItem(@PathVariable UUID cartItemId) {
-        return buildResponse("Item removed from cart", HttpStatus.OK, cartService.removeItem(cartItemId));
+    @PreAuthorize("hasAuthority('CLIENT')")
+    public ResponseEntity<GeneralResponse> removeItem(@PathVariable UUID cartItemId, Authentication authentication) {
+        String clientEmail = authentication.getName();
+
+        return buildResponse("Item removed from cart", HttpStatus.OK, cartService.removeItem(cartItemId, clientEmail));
     }
 
     // DELETE /api/cart/items
     @DeleteMapping("/items")
-    public ResponseEntity<GeneralResponse> clearCart() {
-        return buildResponse("Cart cleared", HttpStatus.OK, cartService.clearCart());
+    @PreAuthorize("hasAuthority('CLIENT')")
+    public ResponseEntity<GeneralResponse> clearCart(Authentication authentication) {
+        String clientEmail = authentication.getName();
+
+        return buildResponse("Cart cleared", HttpStatus.OK, cartService.clearCart(clientEmail));
     }
 
     // GET /api/cart/summary
     @GetMapping("/summary")
-    public ResponseEntity<GeneralResponse> getSummary() {
-        return buildResponse("Cart summary", HttpStatus.OK, cartService.getSummary());
+    @PreAuthorize("hasAuthority('CLIENT')")
+    public ResponseEntity<GeneralResponse> getSummary(Authentication authentication) {
+        String clientEmail = authentication.getName();
+
+        return buildResponse("Cart summary", HttpStatus.OK, cartService.getSummary(clientEmail));
     }
 
     // POST /api/cart/refresh
     @PostMapping("/refresh")
-    public ResponseEntity<GeneralResponse> refresh() {
-        return buildResponse("Cart refreshed", HttpStatus.OK, cartService.refresh());
+    @PreAuthorize("hasAuthority('CLIENT')")
+    public ResponseEntity<GeneralResponse> refresh(Authentication authentication) {
+        String clientEmail = authentication.getName();
+
+        return buildResponse("Cart refreshed", HttpStatus.OK, cartService.refresh(clientEmail));
     }
 
     private ResponseEntity<GeneralResponse> buildResponse(String message, HttpStatus status, Object data) {

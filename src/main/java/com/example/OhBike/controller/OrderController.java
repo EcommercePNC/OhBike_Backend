@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,24 +27,31 @@ public class OrderController {
     // GET /api/orders/checkout/preview
     @GetMapping("/checkout/preview")
     public ResponseEntity<GeneralResponse> previewCheckout(
-            @Valid @RequestBody CheckoutRequest request) {
+            @Valid @RequestBody CheckoutRequest request,
+            Authentication authentication) {
+        String email = authentication.getName();
         return buildResponse("Checkout preview", HttpStatus.OK,
-                orderService.previewCheckout(request));
+                orderService.previewCheckout(request, email));
     }
 
     // POST /api/orders/checkout
     @PostMapping("/checkout")
     public ResponseEntity<GeneralResponse> checkout(
-            @Valid @RequestBody CheckoutRequest request) {
+            @Valid @RequestBody CheckoutRequest request,
+            Authentication authentication) {
+        String email = authentication.getName();
+
         return buildResponse("Order created successfully", HttpStatus.CREATED,
-                orderService.checkout(request));
+                orderService.checkout(request, email));
     }
 
     // PATCH /api/orders/{orderId}/pay
     @PatchMapping("/{orderId}/pay")
-    public ResponseEntity<GeneralResponse> payOrder(@PathVariable UUID orderId) {
+    public ResponseEntity<GeneralResponse> payOrder(@PathVariable UUID orderId, Authentication authentication) {
+        String email = authentication.getName();
+
         return buildResponse("Order marked as paid", HttpStatus.OK,
-                orderService.payOrder(orderId));
+                orderService.payOrder(orderId, email));
     }
 
     // PATCH /api/orders/{orderId}/ship
@@ -63,9 +71,10 @@ public class OrderController {
 
     // GET /api/orders/my
     @GetMapping("/my")
-    public ResponseEntity<GeneralResponse> getMyOrders() {
+    public ResponseEntity<GeneralResponse> getMyOrders(Authentication authentication) {
+        String email = authentication.getName();
         return buildResponse("User orders", HttpStatus.OK,
-                orderService.getMyOrders());
+                orderService.getMyOrders(email));
     }
 
     // GET /api/orders
