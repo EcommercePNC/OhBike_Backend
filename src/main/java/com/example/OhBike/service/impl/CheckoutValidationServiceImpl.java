@@ -2,14 +2,12 @@ package com.example.OhBike.service.impl;
 
 import com.example.OhBike.dto.request.CheckoutRequest;
 import com.example.OhBike.dto.response.CheckoutValidationResponse;
-import com.example.OhBike.entity.Cart;
-import com.example.OhBike.entity.CartItem;
-import com.example.OhBike.entity.Coupon;
-import com.example.OhBike.entity.ShippingMethod;
+import com.example.OhBike.entity.*;
 import com.example.OhBike.exception.ResourceNotFoundException;
 import com.example.OhBike.repository.CartRepository;
 import com.example.OhBike.repository.CouponRepository;
 import com.example.OhBike.repository.ShippingMethodRepository;
+import com.example.OhBike.repository.UserRepository;
 import com.example.OhBike.service.CheckoutValidationService;
 import com.example.OhBike.util.AuthUtil;
 import lombok.RequiredArgsConstructor;
@@ -29,13 +27,16 @@ public class CheckoutValidationServiceImpl implements CheckoutValidationService 
     private final CartRepository cartRepository;
     private final CouponRepository couponRepository;
     private final ShippingMethodRepository shippingMethodRepository;
+    private final UserRepository userRepository;
 
     @Override
-    public CheckoutValidationResponse validate(CheckoutRequest request) {
+    public CheckoutValidationResponse validate(CheckoutRequest request, String email) {
         List<String> errors = new ArrayList<>();
 
-        UUID userId = AuthUtil.getCurrentUserId();
-        Cart cart = cartRepository.findByUser_Id(userId)
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Cart cart = cartRepository.findByUser_Id(user.getId())
                 .orElse(null);
 
         if (cart == null || cart.getItems() == null || cart.getItems().isEmpty()) {

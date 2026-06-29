@@ -1,6 +1,8 @@
 package com.example.OhBike.service.impl;
 
+import com.example.OhBike.entity.User;
 import com.example.OhBike.entity.enums.OrderStatus;
+import com.example.OhBike.exception.UnauthorizedOperationException;
 import com.example.OhBike.mapper.UserMapper;
 import com.example.OhBike.dto.request.ReviewRequest;
 import com.example.OhBike.dto.response.ReviewResponse;
@@ -32,13 +34,16 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional
-    public void createReview(UUID userId, UUID productId, ReviewRequest request) {
-        if (reviewRepository.existsByUser_IdAndProduct_Id(userId, productId)) {
+    public void createReview(String email, UUID productId, ReviewRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (reviewRepository.existsByUser_IdAndProduct_Id(user.getId(), productId)) {
             throw new BusinessRuleException("You have already reviewed this product.");
         }
 
         boolean hasPurchased = orderRepository.existsByUserIdAndProductIdAndStatus(
-                userId,
+                user.getId(),
                 productId,
                 OrderStatus.SHIPPED
         );
@@ -47,8 +52,6 @@ public class ReviewServiceImpl implements ReviewService {
             throw new BusinessRuleException("You can only review products you have purchased and received.");
         }
 
-        var user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         var product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
@@ -64,14 +67,19 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional
-    public void deleteReview(UUID currentUserId, UUID reviewId) {
+    public void deleteReview(String email, UUID reviewId) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found"));
 
-        if (!review.getUser().getId().equals(currentUserId)) {
-            throw new BusinessRuleException("You are not authorized to delete this review.");
-        }
+        boolean isOwner = user.getId().equals(review.getUser().getId());
+        boolean isAdmin = user.getRole().getName().equals("ADMIN");
 
+        if (!isOwner && !isAdmin) {
+            throw new UnauthorizedOperationException("You do not have permission to delete this review.");
+        }
         reviewRepository.deleteById(reviewId);
     }
 

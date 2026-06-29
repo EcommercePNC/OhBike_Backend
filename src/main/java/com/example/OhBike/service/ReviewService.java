@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ReviewService {
-    void createReview(UUID userId, UUID productId, ReviewRequest request);
-    void deleteReview(UUID currentUserId, UUID reviewId);
+    void createReview(String email, UUID productId, ReviewRequest request);
+    void deleteReview(String email, UUID reviewId);
     List<ReviewResponse> getReviewsByProduct(UUID productId);
 }

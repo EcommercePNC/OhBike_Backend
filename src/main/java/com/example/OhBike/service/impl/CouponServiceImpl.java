@@ -122,15 +122,24 @@ public class CouponServiceImpl implements CouponService {
     @Override
     @Transactional
     public CouponResponse redeemCoupon(String code) {
+
         Coupon coupon = couponRepository.findByCode(code)
-                .orElseThrow(() -> new ResourceNotFoundException("Coupon not found"));
+                        .orElseThrow(() -> new ResourceNotFoundException("Coupon not found"));
+
+        if (coupon.getExpirationDate().isBefore(LocalDate.now())) {
+
+            throw new BusinessRuleException("Coupon expired");
+        }
 
         if (coupon.getUsedCount() >= coupon.getMaxUses()) {
-            throw new BusinessRuleException("Coupon is sold out");
+            throw new BusinessRuleException("Coupon sold out");
         }
 
         coupon.setUsedCount(coupon.getUsedCount() + 1);
-        return couponMapper.toDto(couponRepository.save(coupon));
+
+        couponRepository.save(coupon);
+
+        return couponMapper.toDto(coupon);
     }
 
     @Override
@@ -152,7 +161,7 @@ public class CouponServiceImpl implements CouponService {
 
         return switch (discount.getDiscountType()) {
             case PERCENTAGE -> calculatePercentage(originalPrice, discountValue);
-            case FIXED_AMOUNT -> originalPrice.subtract(discountValue);
+            case FIXED_AMOUNT -> originalPrice.subtract(discountValue).max(BigDecimal.ZERO);
             case NONE -> originalPrice;
         };
     }

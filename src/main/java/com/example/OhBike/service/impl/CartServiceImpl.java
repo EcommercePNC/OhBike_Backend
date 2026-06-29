@@ -18,7 +18,6 @@ import com.example.OhBike.repository.CartRepository;
 import com.example.OhBike.repository.ProductVariantRepository;
 import com.example.OhBike.repository.UserRepository;
 import com.example.OhBike.service.CartService;
-import com.example.OhBike.util.AuthUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -39,15 +38,16 @@ public class CartServiceImpl implements CartService {
     private final CartMapper cartMapper;
 
     @Override
-    public CartResponse getMyCart() {
-        Cart cart = getOrCreateCart();
+    public CartResponse getMyCart(String email) {
+        Cart cart = getOrCreateCart(email);
         return cartMapper.toDto(cart);
+
     }
 
     @Override
     @Transactional
-    public CartResponse addItem(AddCartItemRequest request) {
-        Cart cart = getOrCreateCart();
+    public CartResponse addItem(AddCartItemRequest request, String email) {
+        Cart cart = getOrCreateCart(email);
         ProductVariant variant = findActiveVariant(request.getVariantId());
 
         if (variant.getStock() < request.getQuantity()) {
@@ -72,7 +72,8 @@ public class CartServiceImpl implements CartService {
                             .variant(variant)
                             .quantity(request.getQuantity())
                             .build();
-                    cartItemRepository.save(newItem);
+                    cart.getItems().add(newItem);
+                    cartRepository.save(cart);
                 });
 
         return cartMapper.toDto(refreshCart(cart.getId()));
@@ -80,11 +81,11 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
-    public CartResponse updateItem(UUID cartItemId, UpdateCartItemRequest request) {
-        CartItem item = findCartItemOfCurrentUser(cartItemId);
+    public CartResponse updateItem(UUID cartItemId, UpdateCartItemRequest request, String email) {
+        CartItem item = findCartItemOfCurrentUser(cartItemId, email);
 
         if (request.getQuantity() == 0) {
-            cartItemRepository.delete(item);
+            removeItemFromCart(item);
         } else {
             if (item.getVariant().getStock() < request.getQuantity()) {
                 throw new BusinessRuleException(
@@ -100,25 +101,25 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
-    public CartResponse removeItem(UUID cartItemId) {
-        CartItem item = findCartItemOfCurrentUser(cartItemId);
+    public CartResponse removeItem(UUID cartItemId, String email) {
+        CartItem item = findCartItemOfCurrentUser(cartItemId, email);
         UUID cartId = item.getCart().getId();
-        cartItemRepository.delete(item);
+        removeItemFromCart(item);
         return cartMapper.toDto(refreshCart(cartId));
     }
 
     @Override
     @Transactional
-    public CartResponse clearCart() {
-        Cart cart = getOrCreateCart();
+    public CartResponse clearCart(String email) {
+        Cart cart = getOrCreateCart(email);
         cart.getItems().clear();
         cartRepository.save(cart);
         return cartMapper.toDto(refreshCart(cart.getId()));
     }
 
     @Override
-    public CartSummaryResponse getSummary() {
-        Cart cart = getOrCreateCart();
+    public CartSummaryResponse getSummary(String email) {
+        Cart cart = getOrCreateCart(email);
 
         BigDecimal subtotal = cart.getItems().stream()
                 .map(item -> item.getVariant().getPrice()
@@ -146,8 +147,8 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
-    public CartRefreshResponse refresh() {
-        Cart cart = getOrCreateCart();
+    public CartRefreshResponse refresh(String email) {
+        Cart cart = getOrCreateCart(email);
 
         List<CartItemResponse> validItems = new ArrayList<>();
         List<String> removedItems = new ArrayList<>();
@@ -200,7 +201,7 @@ public class CartServiceImpl implements CartService {
         }
 
         if (!toDelete.isEmpty()) {
-            cartItemRepository.deleteAll(toDelete);
+            toDelete.forEach(this::removeItemFromCart);
         }
 
         BigDecimal newSubtotal = validItems.stream()
@@ -221,25 +222,25 @@ public class CartServiceImpl implements CartService {
     }
 
 
-    private Cart getOrCreateCart() {
-        UUID userId = AuthUtil.getCurrentUserId();
-        return cartRepository.findByUser_Id(userId).orElseGet(() -> {
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
+    private Cart getOrCreateCart(String email) {
+        User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found: " + email));
+
+        return cartRepository.findByUser_Id(user.getId()).orElseGet(() -> {
             return cartRepository.save(Cart.builder().user(user).build());
         });
     }
 
     private Cart refreshCart(UUID cartId) {
+        cartRepository.flush();
         return cartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
     }
 
-    private CartItem findCartItemOfCurrentUser(UUID cartItemId) {
-        UUID userId = AuthUtil.getCurrentUserId();
+    private CartItem findCartItemOfCurrentUser(UUID cartItemId, String email) {
         CartItem item = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found: " + cartItemId));
-        if (!item.getCart().getUser().getId().equals(userId)) {
+        if (!item.getCart().getUser().getEmail().equals(email)) {
             throw new BusinessRuleException("ACCESS_DENIED",
                     "This cart item does not belong to the current user.");
         }
@@ -250,5 +251,11 @@ public class CartServiceImpl implements CartService {
         return variantRepository.findById(variantId)
                 .filter(ProductVariant::getActive)
                 .orElseThrow(() -> new ResourceNotFoundException("Variant not found: " + variantId));
+    }
+
+    private void removeItemFromCart(CartItem item) {
+        Cart cart = item.getCart();
+        cart.getItems().removeIf(cartItem -> cartItem.getId().equals(item.getId()));
+        cartItemRepository.delete(item);
     }
 }
