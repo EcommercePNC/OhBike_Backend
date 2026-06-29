@@ -14,14 +14,14 @@ import com.example.OhBike.entity.ShippingMethod;
 
 
 @RestController
-@RequestMapping("/api/v1/shipping-methods")
-@PreAuthorize("isAuthenticated()")
+@RequestMapping("/api/shipping-methods")
  public class ShippingMethodController {
 
     @Autowired
     private ShippingMethodService shippingMethodService;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<GeneralResponse> create(@Valid @RequestBody ShippingMethodRequest request) {
         return new ResponseEntity<>(shippingMethodService.create(request), HttpStatus.CREATED);
     }

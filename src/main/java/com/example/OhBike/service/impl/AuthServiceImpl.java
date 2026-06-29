@@ -72,7 +72,7 @@ public class AuthServiceImpl implements AuthService {
 
         return AuthResponse.builder()
                 .token(jwtToken)
-                .message("Successfully logged in")
+                .message("Successfully logged in as: " + user.getRole().getName())
                 .build();
     }
 }
