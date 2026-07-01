@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🚲 Oh Bike! - E-commerce API
+#  Oh Bike! - E-commerce API
 
 Backend desarrollado para una tienda virtual de bicicletas como proyecto de la materia **Programación N-Capas**.
 
@@ -8,8 +8,8 @@ Backend desarrollado para una tienda virtual de bicicletas como proyecto de la m
 Programación N-Capas • Sección 02  
 Docente: **Ing. Luisa Arévalo**
 
-![Java](https://img.shields.io/badge/Java-17-red?style=for-the-badge)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.x-success?style=for-the-badge)
+![Java](https://img.shields.io/badge/Java-21-red?style=for-the-badge)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2.5-success?style=for-the-badge)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue?style=for-the-badge)
 ![JWT](https://img.shields.io/badge/JWT-Authentication-orange?style=for-the-badge)
 ![Maven](https://img.shields.io/badge/Maven-Build-red?style=for-the-badge)
@@ -32,10 +32,10 @@ Más que únicamente cumplir con los requerimientos académicos, el proyecto bus
 
 # 👥 Equipo de Desarrollo
 
-- Karla Martínez
-- Isaac
-- Steven
-- Karina
+- Karla Daniela Martínez Ferrer
+- César Isaac Tovar Jovel
+- Génesis Karina Pérez Henríquez
+- Gerson Steven Majano Guandique
 
 ---
 
@@ -56,7 +56,14 @@ El objetivo principal fue desarrollar una API REST robusta para un sistema de co
 
 # 🏛 Arquitectura del Proyecto
 
-El proyecto sigue una arquitectura **Layered Architecture (N-Capas)**.
+El proyecto sigue una arquitectura **N-Capas**.
+### ¿Por qué se eligió una arquitectura N-Capas?
+
+Se seleccionó una arquitectura basada en capas porque permite separar claramente las responsabilidades de cada componente del sistema, facilitando el mantenimiento, la reutilización del código y la escalabilidad de la aplicación.
+
+Esta organización permite que cambios en la lógica de negocio no afecten directamente los controladores ni el acceso a datos, reduciendo el acoplamiento entre componentes.
+
+Además, este enfoque facilita la realización de pruebas, el trabajo colaborativo entre los integrantes del equipo y la incorporación de nuevas funcionalidades sin modificar grandes partes del sistema.
 
 ```
 Cliente
@@ -106,22 +113,41 @@ Permite:
 sin escribir SQL manual en la mayoría de casos.
 
 ---
-
 # 🧩 Principales Tecnologías
 
-| Tecnología          | Uso |
-|---------------------|-----|
-| Java 21              | Lenguaje principal |
-| Spring Boot         | Framework Backend |
-| Spring Data JPA     | Persistencia |
-| PostgreSQL          | Base de datos |
-| Spring Security     | Seguridad |
-| JWT                 | Autenticación |
-| Hibernate Validator | Validaciones |
-| Maven               | Gestión de dependencias |
-| Swagger/OpenAPI     | Documentación de la API |
+El desarrollo de la API se apoyó en un conjunto de tecnologías modernas del ecosistema Java, seleccionadas por su estabilidad, integración y facilidad para construir aplicaciones empresariales.
+
+| Tecnología | Versión | Descripción                                                                                            |
+|------------|----------|--------------------------------------------------------------------------------------------------------|
+| **Java** | 21 | Lenguaje principal utilizado para el desarrollo de la aplicación.                                      |
+| **Spring Boot** | 3.2.5 | Framework principal para la construcción de la API REST.                                               |
+| **Spring Data JPA** | Incluido en Spring Boot 3.2.5 | Persistencia de datos y acceso a la base de datos mediante repositorios.                               |
+| **Spring Security** | Incluido en Spring Boot 3.2.5 | Implementación de autenticación, autorización y control de acceso basado en roles.                     |
+| **JWT (JJWT)** | 0.12.6 | Generación y validación de JSON Web Tokens para autenticación.                                         |
+| **PostgreSQL** | Driver JDBC incluido | Sistema gestor de base de datos relacional.                                                            |
+| **Spring Validation (Hibernate Validator)** | Incluido en Spring Boot 3.2.5 | Validación de datos de entrada mediante anotaciones como `@NotBlank`, `@Email` y `@Valid`.             |
+| **SpringDoc OpenAPI (Swagger)** | 2.5.0 | Generación automática de documentación interactiva para los endpoints de la API.                       |
+| **Lombok** | 1.18.30 | Reducción de código repetitivo mediante generación automática de getters, setters, constructores, etc. |
+| **Maven** | 3.x | Gestión de dependencias y automatización de la construcción del proyecto.                              |
+
 
 ---
+
+# ⚙️ Decisiones Técnicas
+
+Durante el desarrollo del proyecto se tomaron las siguientes decisiones técnicas:
+
+- Se utilizó Spring Boot 3.2.5 por su integración con Spring Security, Spring Data JPA y facilidad para desarrollar APIs REST.
+
+- Se eligió PostgreSQL como sistema gestor de bases de datos por su robustez, soporte para transacciones y compatibilidad con Spring Data JPA.
+
+- Se implementó autenticación mediante JWT para mantener una arquitectura Stateless y proteger los recursos de la API.
+
+- Se utilizaron DTOs para evitar exponer directamente las entidades de persistencia y controlar la información enviada al cliente.
+
+- Se implementó un Global Exception Handler mediante @ControllerAdvice para centralizar el manejo de errores.
+
+- Se documentó la API utilizando Swagger/OpenAPI para facilitar las pruebas y el consumo de los endpoints.
 
 # 🔐 Seguridad
 
@@ -360,7 +386,7 @@ src
 
 ## Requisitos
 
-- Java 17
+- Java 21
 - Maven
 - PostgreSQL
 
